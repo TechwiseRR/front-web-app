@@ -1,0 +1,12 @@
+.next
+
+.pnpm-store
+
+node_modules
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+.npmrc
+pnpm-lock.yaml
