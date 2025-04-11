@@ -1,0 +1,24 @@
+{
+  "devFiles": [],
+  "ampDevFiles": [],
+  "polyfillFiles": [],
+  "lowPriorityFiles": [],
+  "rootMainFiles": [],
+  "pages": {
+    "/": [
+      "static/chunks/b7601_next_9eb94b._.js",
+      "static/chunks/34e2e_react_bd4f5c._.js",
+      "static/chunks/154a1_react-dom_cjs_react-dom_development_83ef4e.js",
+      "static/chunks/154a1_react-dom_06de9a._.js",
+      "static/chunks/7a998_@heroui_theme_dist_dcebf5._.js",
+      "static/chunks/057b2_@react-aria_interactions_dist_4dd7e6._.js",
+      "static/chunks/607a7_framer-motion_dist_es_fb2cec._.js",
+      "static/chunks/node_modules__pnpm_c80b09._.js",
+      "static/chunks/[root of the server]__b8848d._.js",
+      "static/chunks/38716_@heroui_dom-animation_dist_index_mjs_1cfb26._.js",
+      "static/chunks/pages_index_5771e1._.js",
+      "static/chunks/pages_index_8b06df._.js"
+    ]
+  },
+  "ampFirstPages": []
+}
