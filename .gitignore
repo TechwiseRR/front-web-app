@@ -3,7 +3,10 @@
 # dependencies
 /node_modules
 /.pnp
+.pnpm-store
+.next
 .pnp.js
+.npmrc
 
 # testing
 /coverage
