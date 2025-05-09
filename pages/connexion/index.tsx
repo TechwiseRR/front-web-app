@@ -1,6 +1,40 @@
+import { useState } from "react";
 import DefaultLayout from "@/layouts/default";
 
 export default function IndexPage() {
+  const [form, setForm] = useState({
+    username: "",
+    password: "",
+  });
+
+  const [errors, setErrors] = useState({
+    username: "",
+    password: "",
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setForm((prev) => ({ ...prev, [id]: value }));
+    setErrors((prev) => ({ ...prev, [id]: "" }));
+  };
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+    if (!form.username.trim()) newErrors.username = "Le nom d’utilisateur est requis.";
+    if (!form.password) newErrors.password = "Le mot de passe est requis.";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validate()) {
+      alert("Connexion réussie !");
+      // Appel API ou redirection ici
+    }
+  };
+
   return (
     <DefaultLayout>
       <section className="flex flex-col items-center justify-center">
@@ -15,22 +49,36 @@ export default function IndexPage() {
             </p>
           </div>
 
-          <form className="flex flex-col gap-4">
-
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-4">
             <div className="flex flex-col gap-1">
               <label htmlFor="username" className="text-sm text-[#053559] font-medium">Nom d’utilisateur</label>
-              <input id="username" type="text" placeholder="Example.exp" className="bg-[#ede6f9] text-[#053559] placeholder:text-[#053559] p-3 rounded-md w-full" />
+              <input
+                id="username"
+                type="text"
+                placeholder="Example.exp"
+                value={form.username}
+                onChange={handleChange}
+                className="bg-[#ede6f9] text-[#053559] placeholder:text-[#053559] p-3 rounded-md w-full"
+              />
+              {errors.username && <span className="text-red-600 text-sm">{errors.username}</span>}
             </div>
 
             <div className="flex flex-col gap-1">
               <label htmlFor="password" className="text-sm text-[#053559] font-medium">Mot de passe</label>
-              <input id="password" type="password" placeholder="********" className="bg-[#ede6f9] text-[#053559] placeholder:text-[#053559] p-3 rounded-md w-full" />
+              <input
+                id="password"
+                type="password"
+                placeholder="********"
+                value={form.password}
+                onChange={handleChange}
+                className="bg-[#ede6f9] text-[#053559] placeholder:text-[#053559] p-3 rounded-md w-full"
+              />
+              {errors.password && <span className="text-red-600 text-sm">{errors.password}</span>}
             </div>
 
             <button type="submit" className="bg-[#0a4267] hover:bg-[#06314f] text-white text-lg py-2 px-4 rounded-lg shadow mt-2">
               Connexion
             </button>
-
           </form>
         </div>
       </section>
