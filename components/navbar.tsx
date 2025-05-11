@@ -48,7 +48,7 @@ export const Navbar = () => {
           ) : (
             // Si l'utilisateur n'est pas authentifié
             <>
-              <Button as={Link} className="text-sm font-normal text-default-600 bg-default-100" href="/home" variant="flat">
+              <Button as={Link} className="text-sm font-normal text-default-600 bg-default-100" href="/" variant="flat">
                 Accueil
               </Button>
               <Button as={Link} className="text-sm font-normal text-default-600 bg-default-100" href="/ressources" variant="flat">
@@ -57,7 +57,7 @@ export const Navbar = () => {
               <Button as={Link} className="text-sm font-normal text-default-600 bg-default-100" href="/aide" variant="flat">
                 Aide
               </Button>
-              <Button as={Link} className="text-sm font-normal text-white bg-[#0a4267]" href="/login">
+              <Button as={Link} className="text-sm font-normal text-white bg-[#0a4267]" href="/connexion">
                 Connexion
               </Button>
             </>
@@ -89,7 +89,7 @@ export const Navbar = () => {
           ) : (
             <>
               <NavbarMenuItem>
-                <Link href="/home" size="lg">Accueil</Link>
+                <Link href="/" size="lg">Accueil</Link>
               </NavbarMenuItem>
               <NavbarMenuItem>
                 <Link href="/ressources" size="lg">Ressources</Link>
@@ -98,7 +98,7 @@ export const Navbar = () => {
                 <Link href="/aide" size="lg">Aide</Link>
               </NavbarMenuItem>
               <NavbarMenuItem>
-                <Link href="/login" size="lg" color="primary">Connexion</Link>
+                <Link href="/connexion" size="lg" color="primary">Connexion</Link>
               </NavbarMenuItem>
             </>
           )}
