@@ -1,5 +1,8 @@
 import { useState } from "react";
 import DefaultLayout from "@/layouts/default";
+import { Input } from "@heroui/input";
+import { Button } from "@heroui/button";
+import { Checkbox } from "@heroui/checkbox";
 
 export default function IndexPage() {
   const [form, setForm] = useState({
@@ -72,15 +75,23 @@ export default function IndexPage() {
             {["lastName", "firstName", "username", "email", "password", "confirmPassword"].map((field) => (
               <div key={field} className="flex flex-col gap-1">
                 <label htmlFor={field} className="text-sm text-[#053559] font-medium capitalize">
-                  {field === "confirmPassword" ? "Confirmation du mot de passe" : field === "lastName" ? "Nom" : field === "firstName" ? "Prénom" : field === "username" ? "Nom d’utilisateur" : field}
+                  {field === "confirmPassword"
+                    ? "Confirmation du mot de passe"
+                    : field === "lastName"
+                    ? "Nom"
+                    : field === "firstName"
+                    ? "Prénom"
+                    : field === "username"
+                    ? "Nom d’utilisateur"
+                    : field}
                 </label>
-                <input
+                <Input
                   id={field}
                   type={field.includes("password") ? "password" : field === "email" ? "email" : "text"}
                   placeholder={field === "email" ? "example@mail.com" : "Example"}
-                  className="bg-[#ede6f9] text-[#053559] placeholder:text-[#053559] p-3 rounded-md w-full"
                   value={(form as any)[field]}
                   onChange={handleChange}
+                  className="bg-[#ede6f9] text-[#053559] placeholder:text-[#053559]"
                 />
                 {errors[field] && <span className="text-red-600 text-sm">{errors[field]}</span>}
               </div>
@@ -88,29 +99,33 @@ export default function IndexPage() {
 
             <div className="flex flex-col gap-1">
               <label htmlFor="birthdate" className="text-sm text-[#053559] font-medium">Date de naissance</label>
-              <input
+              <Input
                 id="birthdate"
                 type="date"
                 value={form.birthdate}
                 onChange={handleChange}
-                className="bg-[#ede6f9] text-[#053559] p-3 rounded-md w-full"
+                className="bg-[#ede6f9] text-[#053559]"
               />
             </div>
 
             <div className="flex items-start gap-2">
-              <input id="terms" type="checkbox" className="mt-1" checked={form.terms} onChange={handleChange} />
-              <label htmlFor="terms" className="text-sm text-[#053559]">J’accepte les CGU et la politique de confidentialité</label>
+              <Checkbox id="terms" checked={form.terms} onCheckedChange={(checked) => handleChange({ target: { id: "terms", type: "checkbox", checked } } as any)} />
+              <label htmlFor="terms" className="text-sm text-[#053559]">
+                J’accepte les CGU et la politique de confidentialité
+              </label>
             </div>
             {errors.terms && <span className="text-red-600 text-sm">{errors.terms}</span>}
 
             <div className="flex items-start gap-2">
-              <input id="newsletter" type="checkbox" className="mt-1" checked={form.newsletter} onChange={handleChange} />
-              <label htmlFor="newsletter" className="text-sm text-[#053559]">Je souhaite recevoir les ressources par mail</label>
+              <Checkbox id="newsletter" checked={form.newsletter} onCheckedChange={(checked) => handleChange({ target: { id: "newsletter", type: "checkbox", checked } } as any)} />
+              <label htmlFor="newsletter" className="text-sm text-[#053559]">
+                Je souhaite recevoir les ressources par mail
+              </label>
             </div>
 
-            <button type="submit" className="bg-[#0a4267] hover:bg-[#06314f] text-white text-lg py-2 px-4 rounded-lg shadow mt-2">
+            <Button type="submit" className="bg-[#0a4267] hover:bg-[#06314f] text-white mt-2">
               Créer mon compte
-            </button>
+            </Button>
 
             <p className="text-center text-sm mt-4 text-[#053559]">
               Déjà inscrit ?{" "}
