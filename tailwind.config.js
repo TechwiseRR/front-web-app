@@ -15,8 +15,9 @@ const config = {
         mono: ["var(--font-mono)"],
       },
       colors: {
-        primary: '#f3ede7',
+        primary: '#053559',
         background: '#f3ede7',
+        yellow: '#e5920c'
       },
     },
   },
