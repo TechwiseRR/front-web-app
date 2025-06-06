@@ -40,10 +40,6 @@ export const Navbar = () => {
               <Button className="text-default-100" as={Link} href="/aide" variant="bordered">
                 Aide
               </Button>
-              {/* PENSER A AUTORISER CETTE TAB QUE LORSQUE PERMISSION = ADMIN */}
-              <Button as={Link} href="/dashboard" variant="flat">
-                Dashboard
-              </Button>
               <Button
                 as={Link}
                 href="/profil"
