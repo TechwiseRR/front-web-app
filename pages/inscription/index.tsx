@@ -1,5 +1,8 @@
 import { useState } from "react";
 import DefaultLayout from "@/layouts/default";
+import { Input } from "@heroui/input";
+import { Button } from "@heroui/button";
+import { Checkbox } from "@heroui/checkbox";
 
 export default function IndexPage() {
   const [form, setForm] = useState({
@@ -61,60 +64,125 @@ export default function IndexPage() {
 
   return (
     <DefaultLayout>
-      <section className="flex flex-col items-center justify-center">
+      <section className="flex flex-col items-center justify-center px-4 py-8">
         <div className="w-full max-w-md flex flex-col">
-          <div className="text-center">
-            <h1 className="text-3xl md:text-4xl font-extrabold text-[#053559]">Créez votre compte</h1>
-            <p className="text-md mt-1 text-[#053559]">C’est rapide, sécurisé et gratuit</p>
+          <div className="text-center mb-6">
+            <h1 className="text-primary text-3xl md:text-4xl font-extrabold">
+              Créez votre compte
+            </h1>
+            <p className="text-primary text-md mt-1">
+              C’est rapide, sécurisé et gratuit
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-4">
-            {["lastName", "firstName", "username", "email", "password", "confirmPassword"].map((field) => (
-              <div key={field} className="flex flex-col gap-1">
-                <label htmlFor={field} className="text-sm text-[#053559] font-medium capitalize">
-                  {field === "confirmPassword" ? "Confirmation du mot de passe" : field === "lastName" ? "Nom" : field === "firstName" ? "Prénom" : field === "username" ? "Nom d’utilisateur" : field}
-                </label>
-                <input
-                  id={field}
-                  type={field.includes("password") ? "password" : field === "email" ? "email" : "text"}
-                  placeholder={field === "email" ? "example@mail.com" : "Example"}
-                  className="bg-[#ede6f9] text-[#053559] placeholder:text-[#053559] p-3 rounded-md w-full"
-                  value={(form as any)[field]}
-                  onChange={handleChange}
-                />
-                {errors[field] && <span className="text-red-600 text-sm">{errors[field]}</span>}
-              </div>
-            ))}
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <Input
+              id="lastName"
+              label="Nom"
+              value={form.lastName}
+              onChange={handleChange}
+              isInvalid={!!errors.lastName}
+              errorMessage={errors.lastName}
+            />
+            <Input
+              id="firstName"
+              label="Prénom"
+              value={form.firstName}
+              onChange={handleChange}
+              isInvalid={!!errors.firstName}
+              errorMessage={errors.firstName}
+            />
+            <Input
+              id="username"
+              label="Nom d’utilisateur"
+              value={form.username}
+              onChange={handleChange}
+              isInvalid={!!errors.username}
+              errorMessage={errors.username}
+            />
+            <Input
+              id="email"
+              type="email"
+              label="Email"
+              value={form.email}
+              onChange={handleChange}
+              isInvalid={!!errors.email}
+              errorMessage={errors.email}
+            />
+            <Input
+              id="password"
+              type="password"
+              label="Mot de passe"
+              value={form.password}
+              onChange={handleChange}
+              isInvalid={!!errors.password}
+              errorMessage={errors.password}
+            />
+            <Input
+              id="confirmPassword"
+              type="password"
+              label="Confirmation du mot de passe"
+              value={form.confirmPassword}
+              onChange={handleChange}
+              isInvalid={!!errors.confirmPassword}
+              errorMessage={errors.confirmPassword}
+            />
+            <Input
+              id="birthdate"
+              type="date"
+              label="Date de naissance"
+              value={form.birthdate}
+              onChange={handleChange}
+            />
 
-            <div className="flex flex-col gap-1">
-              <label htmlFor="birthdate" className="text-sm text-[#053559] font-medium">Date de naissance</label>
-              <input
-                id="birthdate"
-                type="date"
-                value={form.birthdate}
-                onChange={handleChange}
-                className="bg-[#ede6f9] text-[#053559] p-3 rounded-md w-full"
+            <div className="flex items-start gap-2 mt-2">
+              <Checkbox
+                id="terms"
+                checked={form.terms}
+                onCheckedChange={(checked) =>
+                  handleChange({
+                    target: {
+                      id: "terms",
+                      type: "checkbox",
+                      checked,
+                    },
+                  } as any)
+                }
               />
+              <label htmlFor="terms" className="text-primary text-sm">
+                J’accepte les CGU et la politique de confidentialité
+              </label>
             </div>
+            {errors.terms && (
+              <span className="text-red-600 text-sm">{errors.terms}</span>
+            )}
 
             <div className="flex items-start gap-2">
-              <input id="terms" type="checkbox" className="mt-1" checked={form.terms} onChange={handleChange} />
-              <label htmlFor="terms" className="text-sm text-[#053559]">J’accepte les CGU et la politique de confidentialité</label>
+              <Checkbox
+                id="newsletter"
+                checked={form.newsletter}
+                onCheckedChange={(checked) =>
+                  handleChange({
+                    target: {
+                      id: "newsletter",
+                      type: "checkbox",
+                      checked,
+                    },
+                  } as any)
+                }
+              />
+              <label htmlFor="newsletter" className="text-primary text-sm">
+                Je souhaite recevoir les ressources par mail
+              </label>
             </div>
-            {errors.terms && <span className="text-red-600 text-sm">{errors.terms}</span>}
 
-            <div className="flex items-start gap-2">
-              <input id="newsletter" type="checkbox" className="mt-1" checked={form.newsletter} onChange={handleChange} />
-              <label htmlFor="newsletter" className="text-sm text-[#053559]">Je souhaite recevoir les ressources par mail</label>
-            </div>
-
-            <button type="submit" className="bg-[#0a4267] hover:bg-[#06314f] text-white text-lg py-2 px-4 rounded-lg shadow mt-2">
+            <Button type="submit" className="bg-primary text-white mt-4">
               Créer mon compte
-            </button>
+            </Button>
 
-            <p className="text-center text-sm mt-4 text-[#053559]">
+            <p className="text-primary text-center text-sm mt-4">
               Déjà inscrit ?{" "}
-              <a href="/connexion" className="text-[#053559] underline font-medium">
+              <a href="/connexion" className="text-primary font-medium underline">
                 Se connecter
               </a>
             </p>
