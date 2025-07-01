@@ -44,6 +44,10 @@ export const Navbar = () => {
               <Button as={Link} href="/dashboard" variant="flat">
                 Dashboard
               </Button>
+              {/* PENSER A AUTORISER CETTE TAB QUE LORSQUE PERMISSION = ADMIN */}
+              <Button as={Link} href="/user/list" variant="flat">
+                Utilisateurs
+              </Button>
               <Button
                 as={Link}
                 href="/profil"
