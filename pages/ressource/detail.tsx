@@ -9,6 +9,7 @@ import {
   ThumbsDown,
   User,
   MessageCircle,
+  AlertTriangle,
 } from "lucide-react";
 
 const fakeRessource = {
@@ -43,6 +44,27 @@ export default function RessourceDetailPage() {
   const [downvotes, setDownvotes] = useState(ressource.downvotes);
   const [voteState, setVoteState] = useState<"up" | "down" | null>(null);
 
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: 1,
+      author: "Clara",
+      date: "2025-07-04T09:00:00Z",
+      content: "Merci pour cette ressource, très claire et utile 🙏",
+    },
+    {
+      id: 2,
+      author: "Ahmed",
+      date: "2025-07-04T11:00:00Z",
+      content: "J'ai partagé ça avec mon équipe, ça ouvre de bonnes pistes !",
+    },
+  ]);
+
+  const [newMessage, setNewMessage] = useState("");
+
+  const [reporting, setReporting] = useState(false);
+  const [reportText, setReportText] = useState("");
+  const [reportSent, setReportSent] = useState(false);
+
   const handleVote = (type: "up" | "down") => {
     if (type === "up") {
       if (voteState === "up") {
@@ -67,24 +89,7 @@ export default function RessourceDetailPage() {
     }
   };
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      author: "Clara",
-      date: "2025-07-04T09:00:00Z",
-      content: "Merci pour cette ressource, très claire et utile 🙏",
-    },
-    {
-      id: 2,
-      author: "Ahmed",
-      date: "2025-07-04T11:00:00Z",
-      content: "J'ai partagé ça avec mon équipe, ça ouvre de bonnes pistes !",
-    },
-  ]);
-
-  const [newMessage, setNewMessage] = useState("");
-
-  const handleSend = () => {
+  const handleSendMessage = () => {
     if (!newMessage.trim()) return;
     const newEntry: Message = {
       id: messages.length + 1,
@@ -94,6 +99,13 @@ export default function RessourceDetailPage() {
     };
     setMessages([...messages, newEntry]);
     setNewMessage("");
+  };
+
+  const handleSendReport = () => {
+    if (!reportText.trim()) return;
+    setReportSent(true);
+    setReporting(false);
+    setReportText("");
   };
 
   return (
@@ -147,6 +159,53 @@ export default function RessourceDetailPage() {
           </button>
         </div>
 
+        <div className="pt-10 space-y-4">
+          {!reportSent && !reporting && (
+            <Button
+              onClick={() => setReporting(true)}
+              className="bg-red-600 text-white flex items-center gap-2"
+            >
+              <AlertTriangle size={16} />
+              Signaler la ressource
+            </Button>
+          )}
+
+          {reporting && (
+            <div className="space-y-2">
+              <textarea
+                value={reportText}
+                onChange={(e) => setReportText(e.target.value)}
+                className="w-full border border-red-300 rounded-lg p-3 text-sm text-primary focus:outline-red-500"
+                rows={4}
+                placeholder="Expliquez pourquoi vous signalez cette ressource..."
+              />
+              <div className="flex gap-2 justify-end">
+                <Button
+                  onClick={handleSendReport}
+                  className="bg-red-600 text-white"
+                >
+                  Envoyer le signalement
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setReporting(false);
+                    setReportText("");
+                  }}
+                >
+                  Annuler
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {reportSent && (
+            <div className="text-green-600 font-medium">
+              ✅ Votre signalement a bien été envoyé.
+            </div>
+          )}
+        </div>
+
         <div className="mt-12 space-y-6">
           <h2 className="text-xl font-bold flex items-center gap-2">
             <MessageCircle size={20} /> Discussion
@@ -178,7 +237,7 @@ export default function RessourceDetailPage() {
               placeholder="Écrivez votre message ici..."
             />
             <div className="flex justify-end mt-2">
-              <Button onClick={handleSend} className="bg-yellow text-primary">
+              <Button onClick={handleSendMessage} className="bg-yellow text-primary">
                 Envoyer
               </Button>
             </div>
