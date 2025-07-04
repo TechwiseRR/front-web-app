@@ -12,7 +12,6 @@ export default function IndexPage() {
         <div className="max-w-6xl mx-auto space-y-10">
           <h1 className="text-4xl font-extrabold">Tableau de bord administrateur</h1>
 
-          {/* Statistiques principales */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="bg-blue-100 border-none shadow-sm p-6 flex flex-col items-center justify-center text-center space-y-2">
               <Users size={48} className="text-blue-600" />
@@ -33,7 +32,6 @@ export default function IndexPage() {
             </Card>
           </div>
 
-          {/* Section actions */}
           <div className="mt-12 grid md:grid-cols-2 gap-8">
             <div className="bg-background rounded-xl p-6 shadow-md space-y-4">
               <h2 className="text-xl font-bold text-primary">Derniers signalements</h2>
