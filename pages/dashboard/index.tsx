@@ -1,14 +1,11 @@
 "use client";
 
-import { useRouter } from "next/router";
 import DefaultLayout from "@/layouts/default";
 import { Users, FileText, AlertTriangle } from "lucide-react";
 import { Card } from "@heroui/card";
 import { Button } from "@heroui/button";
 
 export default function IndexPage() {
-  const router = useRouter();
-
   return (
     <DefaultLayout>
       <section className="px-4 py-10 text-primary">
@@ -52,9 +49,7 @@ export default function IndexPage() {
                   <span className="text-red-600">Spam</span>
                 </li>
               </ul>
-              <Button className="bg-primary text-white mt-4">
-                Voir tous les signalements
-              </Button>
+              <Button className="bg-primary text-white mt-4">Voir tous les signalements</Button>
             </div>
 
             <div className="bg-yellow/30 rounded-xl p-6 shadow-md space-y-4">
@@ -64,10 +59,7 @@ export default function IndexPage() {
                 <li>📝 Commentaire modéré sur "Guide CNV"</li>
                 <li>👤 Nouvel utilisateur : <strong>SophieM</strong></li>
               </ul>
-              <Button
-                className="bg-yellow text-primary hover:bg-yellow/80 mt-4"
-                onClick={() => router.push("/ressource/moderator")}
-              >
+              <Button className="bg-yellow text-primary hover:bg-yellow/80 mt-4">
                 Gérer les ressources
               </Button>
             </div>
