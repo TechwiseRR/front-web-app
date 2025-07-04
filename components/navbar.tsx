@@ -48,6 +48,10 @@ export const Navbar = () => {
               <Button as={Link} href="/user/list" variant="flat">
                 Utilisateurs
               </Button>
+              {/* PENSER A AUTORISER CETTE TAB QUE LORSQUE PERMISSION = MODO */}
+              <Button as={Link} href="/ressource/moderator" variant="flat">
+                Ressources en attente
+              </Button>
               <Button
                 as={Link}
                 href="/profil"
