@@ -97,6 +97,9 @@ export default function RessourceDetailPage() {
   const ressource = fakeRessource;
   const router = useRouter();
 
+  const isOwner = currentUser.name === ressource.author.name;
+  const isModerator = currentUser.role === "moderator";
+
   const [upvotes, setUpvotes] = useState(ressource.upvotes);
   const [downvotes, setDownvotes] = useState(ressource.downvotes);
   const [voteState, setVoteState] = useState<"up" | "down" | null>(null);
@@ -208,7 +211,6 @@ export default function RessourceDetailPage() {
           </div>
         </div>
 
-
         <h1 className="text-3xl font-bold">{ressource.title}</h1>
 
         <div className="text-sm text-gray-500 flex gap-4">
@@ -224,12 +226,20 @@ export default function RessourceDetailPage() {
 
         <div className="relative">
           <div className="absolute top-2 right-2 flex gap-2 z-10">
-            <Button color="danger" onPress={() => setReporting(true)}>
-              <AlertTriangle size={18} />
-            </Button>
-            <Button color="warning" onPress={() => router.push(`/ressource/edit/${ressource.id}`)}>
-              <Pencil size={18} />
-            </Button>
+            {(isOwner || isModerator) ? (
+              <Button color="danger" onPress={() => confirm("Supprimer la ressource ?") && alert("Ressource supprimée") }>
+                <Trash2 size={18} />
+              </Button>
+            ) : (
+              <Button color="danger" onPress={() => setReporting(true)}>
+                <AlertTriangle size={18} />
+              </Button>
+            )}
+            {isOwner && (
+              <Button color="warning" onPress={() => router.push(`/ressource/edit/${ressource.id}`)}>
+                <Pencil size={18} />
+              </Button>
+            )}
           </div>
 
           <div
@@ -242,7 +252,7 @@ export default function RessourceDetailPage() {
               <ArrowBigUp size={32} />
               <span className="text-sm">{upvotes}</span>
             </div>
-                        <div onClick={() => handleVote("down")} className={`cursor-pointer flex items-center gap-1 ${voteState === "down" ? "text-red-600" : "text-gray-400"}`}>
+            <div onClick={() => handleVote("down")} className={`cursor-pointer flex items-center gap-1 ${voteState === "down" ? "text-red-600" : "text-gray-400"}`}>
               <ArrowBigDown size={32} />
               <span className="text-sm">{downvotes}</span>
             </div>
