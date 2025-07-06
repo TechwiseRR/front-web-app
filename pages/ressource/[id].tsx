@@ -12,6 +12,7 @@ import {
   ArrowBigUp,
   Pencil,
   Trash2,
+  Star,
 } from "lucide-react";
 import { useRouter } from "next/router";
 
@@ -178,13 +179,23 @@ export default function RessourceDetailPage() {
           </div>
         )}
 
-        <Button
-          variant="ghost"
-          onPress={() => history.back()}
-          className="text-sm text-primary hover:underline flex items-center gap-2"
-        >
-          ← Retour
-        </Button>
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            onPress={() => history.back()}
+            className="text-sm text-primary hover:underline flex items-center gap-2"
+          >
+            ← Retour
+          </Button>
+
+          <div
+            onClick={() => alert('Ajouté aux favoris')}
+            className="cursor-pointer text-yellow-500 hover:text-yellow-600"
+          >
+            <Star size={20} />
+          </div>
+        </div>
+
 
         <h1 className="text-3xl font-bold">{ressource.title}</h1>
 
