@@ -110,6 +110,15 @@ export default function RessourcesPage() {
               </AutocompleteItem>
             ))}
           </Autocomplete>
+
+          <Button
+            as="a"
+            href="/ressource/new"
+            variant="shadow"
+            className="bg-gradient-to-r from-green-500 to-emerald-400 text-white font-semibold"
+          >
+            ➕ Créer une ressource
+          </Button>
         </div>
 
         {/* Affichage */}
