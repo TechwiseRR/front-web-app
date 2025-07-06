@@ -146,7 +146,7 @@ export default function RessourcesPage() {
             <div className="flex justify-center gap-2 mt-10">
               <Button
                 disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => p - 1)}
+                onPress={() => setCurrentPage((p) => p - 1)}
                 variant="bordered"
               >
                 Précédent
@@ -156,7 +156,7 @@ export default function RessourcesPage() {
               </span>
               <Button
                 disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((p) => p + 1)}
+                onPress={() => setCurrentPage((p) => p + 1)}
                 variant="bordered"
               >
                 Suivant
