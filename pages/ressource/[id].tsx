@@ -13,6 +13,7 @@ import {
   Pencil,
   Trash2,
   Star,
+  Share2,
 } from "lucide-react";
 import { useRouter } from "next/router";
 
@@ -188,11 +189,22 @@ export default function RessourceDetailPage() {
             ← Retour
           </Button>
 
-          <div
-            onClick={() => alert('Ajouté aux favoris')}
-            className="cursor-pointer text-yellow-500 hover:text-yellow-600"
-          >
-            <Star size={20} />
+          <div className="flex items-center gap-4">
+            <div
+              onClick={() => alert('Ajouté aux favoris')}
+              className="cursor-pointer text-yellow-500 hover:text-yellow-600"
+            >
+              <Star size={20} />
+            </div>
+            <div
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                alert('Lien copié dans le presse-papiers');
+              }}
+              className="cursor-pointer text-blue-500 hover:text-blue-600"
+            >
+              <Share2 size={20} />
+            </div>
           </div>
         </div>
 
