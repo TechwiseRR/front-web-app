@@ -1,8 +1,11 @@
 import DefaultLayout from "@/layouts/default";
 import { Users, Handshake } from "lucide-react";
 import { Button } from "@heroui/button";
+import { useRouter } from "next/router";
 
 export default function IndexPage() {
+  const router = useRouter();
+
   return (
     <DefaultLayout>
       <section className="px-4">
@@ -17,7 +20,10 @@ export default function IndexPage() {
               liens familiaux, amicaux, professionnels ...
             </p>
             <div className="flex gap-4">
-              <Button className="bg-primary text-white">
+              <Button
+                className="bg-primary text-white"
+                onClick={() => router.push("/ressource")}
+              >
                 Explorer les ressources
               </Button>
               <Button className="bg-yellow text-white">
@@ -61,7 +67,6 @@ export default function IndexPage() {
             </p>
           </div>
         </div>
-
       </section>
     </DefaultLayout>
   );

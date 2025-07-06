@@ -11,8 +11,14 @@ import {
   ArrowBigDown,
   ArrowBigUp,
   Pencil,
+  Trash2,
 } from "lucide-react";
 import { useRouter } from "next/router";
+
+const currentUser = {
+  name: "Vous",
+  role: "user",
+};
 
 const fakeRessource = {
   id: 42,
@@ -71,8 +77,7 @@ const fakeRessource = {
       </div>
 
       <p style="margin-top: 2rem; font-size: 0.85rem; color: #6b7280;">Dernière mise à jour : <strong>1 juillet 2025</strong></p>
-    </section>`
-  ,
+    </section>`,
   publicationDate: "2025-07-01T09:00:00Z",
   status: "published",
   validationDate: "2025-07-02T14:00:00Z",
@@ -93,10 +98,10 @@ export default function RessourceDetailPage() {
   const [upvotes, setUpvotes] = useState(ressource.upvotes);
   const [downvotes, setDownvotes] = useState(ressource.downvotes);
   const [voteState, setVoteState] = useState<"up" | "down" | null>(null);
-
   const [messages, setMessages] = useState([
     { id: 1, author: "Clara", date: "2025-07-04T09:00:00Z", content: "Merci pour cette ressource, très claire et utile 🙏" },
     { id: 2, author: "Ahmed", date: "2025-07-04T11:00:00Z", content: "J'ai partagé ça avec mon équipe, ça ouvre de bonnes pistes !" },
+    { id: 3, author: "Vous", date: "2025-07-05T08:00:00Z", content: "Super intéressant pour notre prochain atelier RH 👍" },
   ]);
 
   const [newMessage, setNewMessage] = useState("");
@@ -135,7 +140,10 @@ export default function RessourceDetailPage() {
 
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
-    setMessages((msgs) => [...msgs, { id: msgs.length + 1, author: "Vous", date: new Date().toISOString(), content: newMessage.trim() }]);
+    setMessages((msgs) => [
+      ...msgs,
+      { id: msgs.length + 1, author: currentUser.name, date: new Date().toISOString(), content: newMessage.trim() },
+    ]);
     setNewMessage("");
   };
 
@@ -144,6 +152,21 @@ export default function RessourceDetailPage() {
     setReportSent(true);
     setReporting(false);
     setReportText("");
+  };
+
+  const handleDeleteMessage = (id: number) => {
+    setMessages((msgs) => msgs.filter((m) => m.id !== id));
+  };
+
+  const handleEditMessage = (id: number) => {
+    const msg = messages.find((m) => m.id === id);
+    if (!msg) return;
+    const newContent = prompt("Modifier le message :", msg.content);
+    if (newContent && newContent.trim()) {
+      setMessages((msgs) =>
+        msgs.map((m) => (m.id === id ? { ...m, content: newContent.trim() } : m))
+      );
+    }
   };
 
   return (
@@ -186,38 +209,26 @@ export default function RessourceDetailPage() {
             </Button>
           </div>
 
-          {reporting && (
-            <div className="bg-red-50 border border-red-200 p-4 rounded-md space-y-4 mb-6 rounded-md z-20 relative">
-              <h3 className="text-red-700 font-semibold flex items-center gap-2">
-                <AlertTriangle size={18} /> Signaler cette ressource
-              </h3>
-              <textarea
-                value={reportText}
-                onChange={(e) => setReportText(e.target.value)}
-                className="w-full border border-red-300 rounded-md p-3 text-sm focus:outline-red-500"
-                placeholder="Expliquez brièvement le problème rencontré..."
-                rows={4}
-              />
-              <div className="flex justify-end gap-2">
-                <Button className="bg-red-600 text-white" onClick={handleSendReport}>
-                  Envoyer
-                </Button>
-                <Button variant="ghost" onClick={() => { setReporting(false); setReportText(""); }}>
-                  Annuler
-                </Button>
-              </div>
-            </div>
-          )}
-
           <div
             className="prose prose-sm max-w-none text-primary text-base leading-relaxed bg-white p-6 rounded-md shadow"
             dangerouslySetInnerHTML={{ __html: ressource.content }}
           />
+
+          <div className="flex gap-4 mt-4">
+            <div onClick={() => handleVote("up")} className={`cursor-pointer flex items-center gap-1 ${voteState === "up" ? "text-green-600" : "text-gray-400"}`}>
+              <ArrowBigUp size={32} />
+              <span className="text-sm">{upvotes}</span>
+            </div>
+                        <div onClick={() => handleVote("down")} className={`cursor-pointer flex items-center gap-1 ${voteState === "down" ? "text-red-600" : "text-gray-400"}`}>
+              <ArrowBigDown size={32} />
+              <span className="text-sm">{downvotes}</span>
+            </div>
+          </div>
         </div>
 
         {reportSent && (
           <div className="bg-green-50 text-green-700 border border-green-200 px-4 py-2 rounded-md mt-6">
-            ✅ Votre signalement a bien été envoyé.
+            Votre signalement a bien été envoyé.
           </div>
         )}
 
@@ -227,14 +238,33 @@ export default function RessourceDetailPage() {
           </h2>
 
           <div className="space-y-3">
-            {messages.map((msg) => (
-              <div key={msg.id} className="p-3 rounded-lg border bg-gray-50">
-                <p className="text-sm text-primary">{msg.content}</p>
-                <span className="text-xs text-gray-400">
-                  — {msg.author}, {new Date(msg.date).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" })}
-                </span>
-              </div>
-            ))}
+            {messages.map((msg) => {
+              const isOwner = msg.author === currentUser.name;
+              return (
+                <div key={msg.id} className="p-3 rounded-lg border bg-gray-50 relative">
+                  <div className="absolute top-2 right-2 flex gap-1">
+                    {isOwner ? (
+                      <>
+                        <Button size="sm" variant="ghost" onPress={() => handleDeleteMessage(msg.id)} className="text-red-600 hover:bg-red-100">
+                          <Trash2 size={14} />
+                        </Button>
+                        <Button size="sm" variant="ghost" onPress={() => handleEditMessage(msg.id)} className="text-yellow-600 hover:bg-yellow-100">
+                          <Pencil size={14} />
+                        </Button>
+                      </>
+                    ) : (
+                      <Button size="sm" variant="ghost" onPress={() => alert(`Commentaire #${msg.id} signalé.`)} className="text-red-600 hover:bg-red-100">
+                        <AlertTriangle size={14} />
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-sm text-primary">{msg.content}</p>
+                  <span className="text-xs text-gray-400">
+                    — {msg.author}, {new Date(msg.date).toLocaleDateString("fr-FR")}
+                  </span>
+                </div>
+              );
+            })}
           </div>
 
           <div>
@@ -253,7 +283,6 @@ export default function RessourceDetailPage() {
             </div>
           </div>
         </div>
-
       </section>
     </DefaultLayout>
   );
