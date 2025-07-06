@@ -36,6 +36,7 @@ export default function RessourceEditNewPage() {
   const [content, setContent] = useState("");
   const [categoryId, setCategoryId] = useState("2");
   const [publicationDate, setPublicationDate] = useState(new Date().toISOString().slice(0, 10));
+  const [snackbar, setSnackbar] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
   const handleCreate = () => {
     const newRessource = {
@@ -45,7 +46,7 @@ export default function RessourceEditNewPage() {
       publicationDate,
     };
     console.log("Nouvelle ressource :", newRessource);
-    alert("Ressource créée !");
+    setSnackbar({ message: "Ressource créée !", type: "success" });
   };
 
   return (
@@ -116,6 +117,16 @@ export default function RessourceEditNewPage() {
             background-color: white;
           }
         `}</style>
+        {snackbar && (
+          <div
+            className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg shadow-md text-white z-50
+              ${snackbar.type === "success" ? "bg-green-600" :
+                snackbar.type === "error" ? "bg-red-600" :
+                "bg-blue-600"}`}
+          >
+            {snackbar.message}
+          </div>
+        )}
       </section>
     </DefaultLayout>
   );

@@ -117,13 +117,13 @@ export default function ModerationPage() {
 
                 <div className="flex gap-4">
                     <Button
-                    onClick={() => handleValidate(ressource.id)}
+                    onPress={() => handleValidate(ressource.id)}
                     className="bg-green-600 text-white flex items-center gap-2"
                     >
                     <CheckCircle size={16} /> Accepter
                     </Button>
                     <Button
-                    onClick={() => handleRefuse(ressource.id)}
+                    onPress={() => handleRefuse(ressource.id)}
                     className="bg-red-600 text-white flex items-center gap-2"
                     >
                     <XCircle size={16} /> Refuser

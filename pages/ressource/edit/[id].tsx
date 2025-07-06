@@ -6,6 +6,8 @@ import DefaultLayout from "@/layouts/default";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import "react-quill/dist/quill.snow.css";
+import snackbar from "@/components/snackbar";
+import Snackbar from "@/components/snackbar";
 
 const QuillEditor = dynamic(() => import("react-quill"), { ssr: false });
 
@@ -48,6 +50,10 @@ export default function RessourceEditPage() {
   const [publicationDate, setPublicationDate] = useState(
     fakeRessource.publicationDate.slice(0, 10)
   );
+  const [snackbar, setSnackbar] = useState<{
+    message: string;
+    type: "success" | "error" | "info";
+  } | null>(null);
 
   const handleSave = () => {
     const updated = {
@@ -58,7 +64,7 @@ export default function RessourceEditPage() {
       publicationDate,
     };
     console.log("Ressource mise à jour :", updated);
-    alert("Ressource enregistrée !");
+    setSnackbar({ message: "Ressource enregistrée avec succès", type: "success" });
   };
 
   return (
@@ -66,7 +72,7 @@ export default function RessourceEditPage() {
       <section className="px-4 py-10 max-w-3xl mx-auto text-primary space-y-8">
         <Button
           variant="ghost"
-          onClick={() => history.back()}
+          onPress={() => history.back()}
           className="text-sm text-primary hover:underline flex items-center gap-2"
         >
           ← Retour
@@ -113,7 +119,7 @@ export default function RessourceEditPage() {
         </div>
 
         <div className="pt-6 flex justify-end">
-          <Button className="bg-primary text-white" onClick={handleSave}>
+          <Button className="bg-primary text-white" onPress={handleSave}>
             Enregistrer
           </Button>
         </div>
@@ -128,6 +134,13 @@ export default function RessourceEditPage() {
             background-color: white;
           }
         `}</style>
+        {snackbar && (
+          <Snackbar
+            message={snackbar.message}
+            type={snackbar.type}
+            onClose={() => setSnackbar(null)}
+          />
+        )}
       </section>
     </DefaultLayout>
   );

@@ -16,6 +16,7 @@ import {
   Share2,
 } from "lucide-react";
 import { useRouter } from "next/router";
+import Snackbar from "@/components/snackbar";
 
 const currentUser = {
   name: "Vous",
@@ -110,6 +111,7 @@ export default function RessourceDetailPage() {
   const [reporting, setReporting] = useState(false);
   const [reportText, setReportText] = useState("");
   const [reportSent, setReportSent] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
   useEffect(() => {
     if (reportSent) {
@@ -150,10 +152,10 @@ export default function RessourceDetailPage() {
   };
 
   const handleSendReport = () => {
-    if (!reportText.trim()) return;
     setReportSent(true);
     setReporting(false);
     setReportText("");
+    setSnackbar({ message: "Signalement envoyé avec succès", type: "success" });
   };
 
   const handleDeleteMessage = (id: number) => {
@@ -191,7 +193,7 @@ export default function RessourceDetailPage() {
 
           <div className="flex items-center gap-4">
             <div
-              onClick={() => alert('Ajouté aux favoris')}
+              onClick={() => setSnackbar({ message: "Ressource ajoutée aux favoris", type: "success" })}
               className="cursor-pointer text-yellow-500 hover:text-yellow-600"
             >
               <Star size={20} />
@@ -199,7 +201,7 @@ export default function RessourceDetailPage() {
             <div
               onClick={() => {
                 navigator.clipboard.writeText(window.location.href);
-                alert('Lien copié dans le presse-papiers');
+                setSnackbar({ message: "Lien copié dans le presse-papier", type: "success" });
               }}
               className="cursor-pointer text-blue-500 hover:text-blue-600"
             >
@@ -224,12 +226,29 @@ export default function RessourceDetailPage() {
 
         <div className="relative">
           <div className="absolute top-2 right-2 flex gap-2 z-10">
-            <Button color="danger" onPress={() => setReporting(true)}>
-              <AlertTriangle size={18} />
-            </Button>
-            <Button color="warning" onPress={() => router.push(`/ressource/edit/${ressource.id}`)}>
-              <Pencil size={18} />
-            </Button>
+            {(currentUser.name === ressource.author.name || currentUser.role === "moderator") ? (
+              <Button
+                color="danger"
+                onPress={() => {
+                  if (confirm("Supprimer la ressource ?")) {
+                    // API
+                    setSnackbar({ message: "Ressource supprimée", type: "success" });
+                  }
+                }}
+              >
+                <Trash2 size={18} />
+              </Button>
+            ) : (
+              <Button color="danger" onPress={handleSendReport}>
+                <AlertTriangle size={18} />
+              </Button>
+            )}
+
+            {currentUser.name === ressource.author.name && (
+              <Button color="warning" onPress={() => router.push(`/ressource/edit/${ressource.id}`)}>
+                <Pencil size={18} />
+              </Button>
+            )}
           </div>
 
           <div
@@ -248,12 +267,6 @@ export default function RessourceDetailPage() {
             </div>
           </div>
         </div>
-
-        {reportSent && (
-          <div className="bg-green-50 text-green-700 border border-green-200 px-4 py-2 rounded-md mt-6">
-            Votre signalement a bien été envoyé.
-          </div>
-        )}
 
         <div className="mt-12 space-y-6">
           <h2 className="text-xl font-bold flex items-center gap-2">
@@ -276,7 +289,7 @@ export default function RessourceDetailPage() {
                         </Button>
                       </>
                     ) : (
-                      <Button size="sm" variant="ghost" onPress={() => alert(`Commentaire #${msg.id} signalé.`)} className="text-red-600 hover:bg-red-100">
+                      <Button size="sm" variant="ghost" onPress={() => setSnackbar({ message: `Commentaire #${msg.id} signalé.`, type: "success" })} className="text-red-600 hover:bg-red-100">
                         <AlertTriangle size={14} />
                       </Button>
                     )}
@@ -306,6 +319,13 @@ export default function RessourceDetailPage() {
             </div>
           </div>
         </div>
+        {snackbar && (
+          <Snackbar
+            message={snackbar.message}
+            type={snackbar.type}
+            onClose={() => setSnackbar(null)}
+          />
+        )}
       </section>
     </DefaultLayout>
   );
