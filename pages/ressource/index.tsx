@@ -8,6 +8,7 @@ import {
   Autocomplete,
   AutocompleteItem,
 } from "@heroui/autocomplete";
+import router from "next/router";
 
 type Resource = {
   id: number;
@@ -113,7 +114,7 @@ export default function RessourcesPage() {
 
           <Button
             as="a"
-            href="/ressource/new"
+            href="/ressource/edit/new"
             variant="shadow"
             className="bg-gradient-to-r from-green-500 to-emerald-400 text-white font-semibold"
           >
@@ -140,10 +141,16 @@ export default function RessourcesPage() {
                     {res.content}
                   </CardBody>
                   <Button
-                    as="a"
-                    href={`/ressources/${res.id}`}
                     variant="flat"
                     className="w-full bg-gradient-to-r from-[#FF705B] to-[#FFB457] text-white"
+                    onPress={() => {
+                      router.push({
+                        pathname: `/ressource/${res.id}`,
+                      }, undefined, {
+                        shallow: false,
+                      });
+                      sessionStorage.setItem("selectedRessource", JSON.stringify(res));
+                    }}
                   >
                     Voir la ressource
                   </Button>

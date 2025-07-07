@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import DefaultLayout from "@/layouts/default";
 import { Button } from "@heroui/button";
@@ -8,23 +8,6 @@ import { Input } from "@heroui/input";
 import "react-quill/dist/quill.snow.css";
 
 const QuillEditor = dynamic(() => import("react-quill"), { ssr: false });
-
-const fakeRessource = {
-  id: 42,
-  title: "Construire une culture de feedback bienveillante",
-  content:
-    "Le feedback est un levier essentiel pour faire grandir les individus et les équipes...",
-  publicationDate: "2025-07-01T09:00:00Z",
-  category: { id: 2, name: "Professionnel" },
-  author: { id: 4, name: "Lina Belkacem" },
-};
-
-const categories = [
-  { id: 1, name: "Famille" },
-  { id: 2, name: "Professionnel" },
-  { id: 3, name: "Éducation" },
-  { id: 4, name: "Communauté" },
-];
 
 const quillModules = {
   toolbar: [
@@ -42,23 +25,79 @@ const quillModules = {
 };
 
 export default function RessourceEditPage() {
-  const [title, setTitle] = useState(fakeRessource.title);
-  const [content, setContent] = useState(fakeRessource.content);
-  const [categoryId, setCategoryId] = useState(`${fakeRessource.category.id}`);
-  const [publicationDate, setPublicationDate] = useState(
-    fakeRessource.publicationDate.slice(0, 10)
-  );
+  const [ressourceId, setRessourceId] = useState<number | null>(null);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [content, setContent] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [publicationDate, setPublicationDate] = useState("");
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
 
-  const handleSave = () => {
-    const updated = {
-      ...fakeRessource,
+  useEffect(() => {
+    const stored = sessionStorage.getItem("ressourceToEdit");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setRessourceId(parsed.id ?? null);
+        setTitle(parsed.title ?? "");
+        setDescription(parsed.description ?? "");
+        setContent(parsed.content ?? "");
+        setCategoryId(`${parsed.category_id ?? parsed.category?.id ?? ""}`);
+        setPublicationDate(parsed.publication_date?.slice(0, 10) ?? "");
+      } catch (err) {
+        console.error("Erreur parsing ressource:", err);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("http://localhost:8081/api/categories");
+        const json = await res.json();
+        if (Array.isArray(json)) {
+          setCategories(json);
+        } else {
+          setCategories([]);
+        }
+      } catch {
+        setCategories([]);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  const handleSave = async () => {
+    if (!ressourceId) return;
+
+    const payload = {
       title,
+      description,
       content,
       category_id: parseInt(categoryId),
-      publicationDate,
     };
-    console.log("Ressource mise à jour :", updated);
-    alert("Ressource enregistrée !");
+
+    try {
+      const response = await fetch(`http://localhost:8081/api/ressources/${ressourceId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        const message = errorData?.message || "Erreur lors de la mise à jour.";
+        alert(message);
+        return;
+      }
+
+      sessionStorage.removeItem("ressourceToEdit");
+      alert("Ressource mise à jour !");
+    } catch (error: any) {
+      alert("Erreur réseau ou serveur : " + error.message);
+    }
   };
 
   return (
@@ -81,6 +120,17 @@ export default function RessourceEditPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="mt-1"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">Description</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg p-3 text-sm text-primary focus:outline-primary mt-1"
+              rows={3}
+              placeholder="Résumé ou introduction de la ressource"
             />
           </div>
 

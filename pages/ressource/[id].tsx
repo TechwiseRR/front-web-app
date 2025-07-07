@@ -22,87 +22,13 @@ const currentUser = {
   role: "user",
 };
 
-const fakeRessource = {
-  id: 42,
-  title: "Construire une culture de feedback bienveillante",
-  content: `
-    <section style="font-family: 'Inter', sans-serif;">
-      <h2 style="color: #1e40af; font-size: 1.75rem; margin-bottom: 0.5rem;">✨ L'art du feedback</h2>
-      <p style="font-size: 1rem; color: #374151; line-height: 1.6;">
-        Un bon <strong style="color:#0ea5e9;">feedback</strong> peut transformer une dynamique d’équipe.
-        Il repose sur <mark style="background-color: #fcd34d;">la clarté</mark>, <em style="color: #9333ea;">l’écoute</em> et <u>l’intention positive</u>.
-      </p>
-
-      <h3 style="color: #16a34a; margin-top: 2rem; font-size: 1.25rem;">🔑 Bonnes pratiques</h3>
-      <ul style="margin-left: 1rem; color: #4b5563; font-size: 0.95rem;">
-        <li><span style="color: #f43f5e;">✅ Soyez spécifique</span> : ciblez un comportement concret</li>
-        <li><span style="color: #f97316;">💡 Proposez des pistes</span> : ouvrez à la co-construction</li>
-        <li><span style="color: #3b82f6;">🤝 Restez aligné</span> : sur les valeurs communes</li>
-      </ul>
-
-      <blockquote style="margin: 1.5rem 0; padding: 1rem; border-left: 4px solid #10b981; background-color: #ecfdf5; color: #065f46;">
-        “Ton retour lors de notre dernière réunion m’a permis de mieux structurer mon argumentaire. Merci !”
-      </blockquote>
-
-      <h3 style="color: #c2410c; font-size: 1.2rem;">📊 Données internes (T1 2025)</h3>
-      <table style="width: 100%; margin-top: 1rem; border-collapse: collapse; font-size: 0.95rem;">
-        <thead style="background-color: #f3f4f6; color: #111827;">
-          <tr>
-            <th style="border: 1px solid #e5e7eb; padding: 10px;">Mois</th>
-            <th style="border: 1px solid #e5e7eb; padding: 10px;">Feedbacks</th>
-            <th style="border: 1px solid #e5e7eb; padding: 10px;">Tendance</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td style="border: 1px solid #e5e7eb; padding: 10px;">Janvier</td>
-            <td style="border: 1px solid #e5e7eb; padding: 10px;">42</td>
-            <td style="border: 1px solid #e5e7eb; padding: 10px;"><span style="color: #16a34a;">+15%</span></td>
-          </tr>
-          <tr style="background-color: #fefce8;">
-            <td style="border: 1px solid #e5e7eb; padding: 10px;">Février</td>
-            <td style="border: 1px solid #e5e7eb; padding: 10px;">39</td>
-            <td style="border: 1px solid #e5e7eb; padding: 10px;"><span style="color: #f59e0b;">-7%</span></td>
-          </tr>
-          <tr>
-            <td style="border: 1px solid #e5e7eb; padding: 10px;">Mars</td>
-            <td style="border: 1px solid #e5e7eb; padding: 10px;">58</td>
-            <td style="border: 1px solid #e5e7eb; padding: 10px;"><span style="color: #16a34a;">+48%</span></td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div style="margin-top: 2rem; font-size: 0.95rem;">
-        🔗 <a href="https://www.cnv-international.fr" target="_blank" style="color: #3b82f6; text-decoration: underline;">
-        En savoir plus sur la communication non violente (CNV)
-        </a>
-      </div>
-
-      <p style="margin-top: 2rem; font-size: 0.85rem; color: #6b7280;">Dernière mise à jour : <strong>1 juillet 2025</strong></p>
-    </section>`,
-  publicationDate: "2025-07-01T09:00:00Z",
-  status: "published",
-  validationDate: "2025-07-02T14:00:00Z",
-  upvotes: 23,
-  downvotes: 2,
-  category_id: 2,
-  author_id: 4,
-  validator_id: 1,
-  author: { id: 4, name: "Lina Belkacem" },
-  validator: { id: 1, name: "Admin RH" },
-  category: { id: 2, name: "Professionnel" },
-};
-
 export default function RessourceDetailPage() {
-  const ressource = fakeRessource;
   const router = useRouter();
-
-  const isOwner = currentUser.name === ressource.author.name;
-  const isModerator = currentUser.role === "moderator";
-
-  const [upvotes, setUpvotes] = useState(ressource.upvotes);
-  const [downvotes, setDownvotes] = useState(ressource.downvotes);
+  const [ressource, setRessource] = useState<any | null>(null);
+  const [upvotes, setUpvotes] = useState<number>(0);
+  const [downvotes, setDownvotes] = useState<number>(0);
   const [voteState, setVoteState] = useState<"up" | "down" | null>(null);
+
   const [messages, setMessages] = useState([
     { id: 1, author: "Clara", date: "2025-07-04T09:00:00Z", content: "Merci pour cette ressource, très claire et utile 🙏" },
     { id: 2, author: "Ahmed", date: "2025-07-04T11:00:00Z", content: "J'ai partagé ça avec mon équipe, ça ouvre de bonnes pistes !" },
@@ -113,6 +39,18 @@ export default function RessourceDetailPage() {
   const [reporting, setReporting] = useState(false);
   const [reportText, setReportText] = useState("");
   const [reportSent, setReportSent] = useState(false);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem("selectedRessource");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      setRessource(parsed);
+      setUpvotes(parsed.upvotes ?? 0);
+      setDownvotes(parsed.downvotes ?? 0);
+    } else {
+      router.push("/ressource");
+    }
+  }, []);
 
   useEffect(() => {
     if (reportSent) {
@@ -174,10 +112,23 @@ export default function RessourceDetailPage() {
     }
   };
 
+  if (!ressource) {
+    return (
+      <DefaultLayout>
+        <div className="px-4 py-10 max-w-3xl mx-auto text-center text-gray-500">
+          Chargement de la ressource...
+        </div>
+      </DefaultLayout>
+    );
+  }
+
+  const isOwner = true;
+  const isModerator = currentUser.role === "moderator";
+
   return (
     <DefaultLayout>
       <section className="px-4 py-10 max-w-3xl mx-auto space-y-10 text-primary">
-        {ressource.category && (
+        {ressource.category?.name && (
           <div className="inline-block text-xs uppercase tracking-wide font-semibold text-white bg-primary px-3 py-1 rounded-full">
             {ressource.category.name}
           </div>
@@ -216,36 +167,53 @@ export default function RessourceDetailPage() {
         <div className="text-sm text-gray-500 flex gap-4">
           <span className="flex items-center gap-1">
             <User size={14} />
-            {ressource.author.name}
+            {ressource.user?.username ?? `Utilisateur #${ressource.user_id}`}
           </span>
           <span className="flex items-center gap-1">
             <CalendarDays size={14} />
-            {new Date(ressource.publicationDate).toLocaleDateString("fr-FR")}
+            {new Date(ressource.publication_date).toLocaleDateString("fr-FR")}
           </span>
         </div>
 
         <div className="relative">
-          <div className="absolute top-2 right-2 flex gap-2 z-10">
-            {(isOwner || isModerator) ? (
-              <Button color="danger" onPress={() => confirm("Supprimer la ressource ?") && alert("Ressource supprimée") }>
-                <Trash2 size={18} />
-              </Button>
-            ) : (
-              <Button color="danger" onPress={() => setReporting(true)}>
-                <AlertTriangle size={18} />
-              </Button>
+            {ressource.description && (
+              <p className="text-base text-gray-600 mb-4 whitespace-pre-line">
+                {ressource.description}
+              </p>
             )}
-            {isOwner && (
-              <Button color="warning" onPress={() => router.push(`/ressource/edit/${ressource.id}`)}>
-                <Pencil size={18} />
-              </Button>
-            )}
-          </div>
 
-          <div
-            className="prose prose-sm max-w-none text-primary text-base leading-relaxed bg-white p-6 rounded-md shadow"
-            dangerouslySetInnerHTML={{ __html: ressource.content }}
-          />
+          <div className="bg-white p-6 rounded-md shadow relative">
+            <div className="absolute top-4 right-4 flex gap-2">
+              {(isOwner || isModerator) ? (
+                <Button
+                  color="danger"
+                  onPress={() => confirm("Supprimer la ressource ?") && alert("Ressource supprimée")}
+                >
+                  <Trash2 size={18} />
+                </Button>
+              ) : (
+                <Button color="danger" onPress={() => setReporting(true)}>
+                  <AlertTriangle size={18} />
+                </Button>
+              )}
+              {isOwner && (
+                <Button
+                  color="warning"
+                  onPress={() => {
+                    sessionStorage.setItem("ressourceToEdit", JSON.stringify(ressource));
+                    router.push(`/ressource/edit/${ressource.id}`);
+                  }}
+                >
+                  <Pencil size={18} />
+                </Button>
+              )}
+            </div>
+
+            <div
+              className="prose prose-sm max-w-none text-primary text-base leading-relaxed pt-12"
+              dangerouslySetInnerHTML={{ __html: ressource.content }}
+            />
+          </div>
 
           <div className="flex gap-4 mt-4">
             <div onClick={() => handleVote("up")} className={`cursor-pointer flex items-center gap-1 ${voteState === "up" ? "text-green-600" : "text-gray-400"}`}>
