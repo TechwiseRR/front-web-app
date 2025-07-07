@@ -58,8 +58,7 @@ export const Navbar = () => {
         <NavbarItem className="hidden md:flex justify-end w-full gap-3">
           {isAuthenticated ? (
             <>
-              <Button as={Link} href="/ressources" variant="bordered" className="text-primary">Ressources</Button>
-              <Button as={Link} href="/forum" variant="bordered" className="text-primary">Forum</Button>
+              <Button as={Link} href="/ressource" variant="bordered" className="text-primary">Ressources</Button>
               <Button as={Link} href="/aide" variant="bordered" className="text-primary">Aide</Button>
 
               {isAdmin?.() && (
@@ -93,7 +92,7 @@ export const Navbar = () => {
           ) : (
             <>
               <Button as={Link} href="/" variant="bordered" className="text-primary">Accueil</Button>
-              <Button as={Link} href="/ressources" variant="bordered" className="text-primary">Ressources</Button>
+              <Button as={Link} href="/ressource" variant="bordered" className="text-primary">Ressources</Button>
               <Button as={Link} href="/aide" variant="bordered" className="text-primary">Aide</Button>
               <Button
                 as={Link}
@@ -116,8 +115,7 @@ export const Navbar = () => {
         <div className="mx-4 mt-4 flex flex-col gap-2">
           {isAuthenticated ? (
             <>
-              <Button as={Link} href="/ressources" variant="bordered" className="text-primary">Ressources</Button>
-              <Button as={Link} href="/forum" variant="bordered" className="text-primary">Forum</Button>
+              <Button as={Link} href="/ressource" variant="bordered" className="text-primary">Ressources</Button>
               <Button as={Link} href="/aide" variant="bordered" className="text-primary">Aide</Button>
               <Button as={Link} href="/profil" variant="bordered" className="text-primary">Profil</Button>
               <Button onClick={handleLogout} variant="bordered" className="bg-red-600 text-white">
@@ -127,7 +125,7 @@ export const Navbar = () => {
           ) : (
             <>
               <Button as={Link} href="/" variant="bordered" className="text-primary">Accueil</Button>
-              <Button as={Link} href="/ressources" variant="bordered" className="text-primary">Ressources</Button>
+              <Button as={Link} href="/ressource" variant="bordered" className="text-primary">Ressources</Button>
               <Button as={Link} href="/aide" variant="bordered" className="text-primary">Aide</Button>
               <Button as={Link} href="/connexion" variant="bordered" className="text-primary">
                 Connexion

@@ -16,103 +16,66 @@ import {
   Share2,
 } from "lucide-react";
 import { useRouter } from "next/router";
+import { useAuthStore } from "@/stores/useAuthStore";
+import Snackbar from "@/components/snackbar";
 
-const currentUser = {
-  name: "Vous",
-  role: "user",
-};
-
-const fakeRessource = {
-  id: 42,
-  title: "Construire une culture de feedback bienveillante",
-  content: `
-    <section style="font-family: 'Inter', sans-serif;">
-      <h2 style="color: #1e40af; font-size: 1.75rem; margin-bottom: 0.5rem;">✨ L'art du feedback</h2>
-      <p style="font-size: 1rem; color: #374151; line-height: 1.6;">
-        Un bon <strong style="color:#0ea5e9;">feedback</strong> peut transformer une dynamique d’équipe.
-        Il repose sur <mark style="background-color: #fcd34d;">la clarté</mark>, <em style="color: #9333ea;">l’écoute</em> et <u>l’intention positive</u>.
-      </p>
-
-      <h3 style="color: #16a34a; margin-top: 2rem; font-size: 1.25rem;">🔑 Bonnes pratiques</h3>
-      <ul style="margin-left: 1rem; color: #4b5563; font-size: 0.95rem;">
-        <li><span style="color: #f43f5e;">✅ Soyez spécifique</span> : ciblez un comportement concret</li>
-        <li><span style="color: #f97316;">💡 Proposez des pistes</span> : ouvrez à la co-construction</li>
-        <li><span style="color: #3b82f6;">🤝 Restez aligné</span> : sur les valeurs communes</li>
-      </ul>
-
-      <blockquote style="margin: 1.5rem 0; padding: 1rem; border-left: 4px solid #10b981; background-color: #ecfdf5; color: #065f46;">
-        “Ton retour lors de notre dernière réunion m’a permis de mieux structurer mon argumentaire. Merci !”
-      </blockquote>
-
-      <h3 style="color: #c2410c; font-size: 1.2rem;">📊 Données internes (T1 2025)</h3>
-      <table style="width: 100%; margin-top: 1rem; border-collapse: collapse; font-size: 0.95rem;">
-        <thead style="background-color: #f3f4f6; color: #111827;">
-          <tr>
-            <th style="border: 1px solid #e5e7eb; padding: 10px;">Mois</th>
-            <th style="border: 1px solid #e5e7eb; padding: 10px;">Feedbacks</th>
-            <th style="border: 1px solid #e5e7eb; padding: 10px;">Tendance</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td style="border: 1px solid #e5e7eb; padding: 10px;">Janvier</td>
-            <td style="border: 1px solid #e5e7eb; padding: 10px;">42</td>
-            <td style="border: 1px solid #e5e7eb; padding: 10px;"><span style="color: #16a34a;">+15%</span></td>
-          </tr>
-          <tr style="background-color: #fefce8;">
-            <td style="border: 1px solid #e5e7eb; padding: 10px;">Février</td>
-            <td style="border: 1px solid #e5e7eb; padding: 10px;">39</td>
-            <td style="border: 1px solid #e5e7eb; padding: 10px;"><span style="color: #f59e0b;">-7%</span></td>
-          </tr>
-          <tr>
-            <td style="border: 1px solid #e5e7eb; padding: 10px;">Mars</td>
-            <td style="border: 1px solid #e5e7eb; padding: 10px;">58</td>
-            <td style="border: 1px solid #e5e7eb; padding: 10px;"><span style="color: #16a34a;">+48%</span></td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div style="margin-top: 2rem; font-size: 0.95rem;">
-        🔗 <a href="https://www.cnv-international.fr" target="_blank" style="color: #3b82f6; text-decoration: underline;">
-        En savoir plus sur la communication non violente (CNV)
-        </a>
-      </div>
-
-      <p style="margin-top: 2rem; font-size: 0.85rem; color: #6b7280;">Dernière mise à jour : <strong>1 juillet 2025</strong></p>
-    </section>`,
-  publicationDate: "2025-07-01T09:00:00Z",
-  status: "published",
-  validationDate: "2025-07-02T14:00:00Z",
-  upvotes: 23,
-  downvotes: 2,
-  category_id: 2,
-  author_id: 4,
-  validator_id: 1,
-  author: { id: 4, name: "Lina Belkacem" },
-  validator: { id: 1, name: "Admin RH" },
-  category: { id: 2, name: "Professionnel" },
-};
+interface Comment {
+  id: number;
+  author: string;
+  date: string;
+  content: string;
+}
 
 export default function RessourceDetailPage() {
-  const ressource = fakeRessource;
   const router = useRouter();
+  const { id } = router.query;
+  const user = useAuthStore((state) => state.user);
+  const isAdmin = useAuthStore((state) => state.isAdmin());
+  const isModerator = useAuthStore((state) => state.isModerator());
 
-  const isOwner = currentUser.name === ressource.author.name;
-  const isModerator = currentUser.role === "moderator";
-
-  const [upvotes, setUpvotes] = useState(ressource.upvotes);
-  const [downvotes, setDownvotes] = useState(ressource.downvotes);
+  const [ressource, setRessource] = useState<any | null>(null);
+  const [upvotes, setUpvotes] = useState(0);
+  const [downvotes, setDownvotes] = useState(0);
   const [voteState, setVoteState] = useState<"up" | "down" | null>(null);
-  const [messages, setMessages] = useState([
-    { id: 1, author: "Clara", date: "2025-07-04T09:00:00Z", content: "Merci pour cette ressource, très claire et utile 🙏" },
-    { id: 2, author: "Ahmed", date: "2025-07-04T11:00:00Z", content: "J'ai partagé ça avec mon équipe, ça ouvre de bonnes pistes !" },
-    { id: 3, author: "Vous", date: "2025-07-05T08:00:00Z", content: "Super intéressant pour notre prochain atelier RH 👍" },
-  ]);
-
+  const [messages, setMessages] = useState<Comment[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [reporting, setReporting] = useState(false);
   const [reportText, setReportText] = useState("");
   const [reportSent, setReportSent] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    const fetchRessource = async () => {
+      try {
+        const res = await fetch("http://localhost:8081/api/ressources");
+        const data = await res.json();
+        const found = data?.data?.find((item: any) => `${item.id}` === `${id}`);
+        if (found) {
+          setRessource(found);
+          setUpvotes(found.upvotes ?? 0);
+          setDownvotes(found.downvotes ?? 0);
+        } else {
+          router.push("/ressource");
+        }
+      } catch {
+        router.push("/ressource");
+      }
+    };
+
+    const fetchComments = async () => {
+      try {
+        const res = await fetch(`http://localhost:8081/api/ressources/${id}/comments`);
+        const data: Comment[] = await res.json();
+        if (Array.isArray(data)) setMessages(data);
+      } catch {
+        setMessages([]);
+      }
+    };
+
+    fetchRessource();
+    fetchComments();
+  }, [id]);
 
   useEffect(() => {
     if (reportSent) {
@@ -143,13 +106,63 @@ export default function RessourceDetailPage() {
     }
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
-    setMessages((msgs) => [
-      ...msgs,
-      { id: msgs.length + 1, author: currentUser.name, date: new Date().toISOString(), content: newMessage.trim() },
-    ]);
-    setNewMessage("");
+
+    const payload = {
+      resource_id: Number(id),
+      content: newMessage.trim(),
+    };
+
+    try {
+      const token = localStorage.getItem("auth_token");
+
+      const res = await fetch("http://localhost:8081/api/comments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Erreur lors de l'envoi du commentaire");
+      const json = await res.json();
+      const newComment: Comment = json.comment;
+      setMessages((prev) => [...prev, newComment]);
+      setNewMessage("");
+    } catch (err: any) {
+      setSnackbar({ message: "Erreur lors de l'envoi : " + err.message, type: "error" });
+    }
+  };
+
+  const handleDeleteRessource = async () => {
+    const confirmDelete = confirm("Supprimer la ressource ?");
+    if (!confirmDelete) return;
+
+    try {
+      const token = localStorage.getItem("auth_token");
+
+      const res = await fetch(`http://localhost:8081/api/ressources/${id}`, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Échec de la suppression");
+      }
+
+      sessionStorage.setItem("snackbar_message", "Ressource supprimée");
+      sessionStorage.setItem("snackbar_type", "success");
+      router.push("/ressource");
+    } catch (err: any) {
+      setSnackbar({ message: "Erreur lors de la suppression : " + err.message, type: "error" });
+    }
   };
 
   const handleSendReport = () => {
@@ -168,16 +181,26 @@ export default function RessourceDetailPage() {
     if (!msg) return;
     const newContent = prompt("Modifier le message :", msg.content);
     if (newContent && newContent.trim()) {
-      setMessages((msgs) =>
-        msgs.map((m) => (m.id === id ? { ...m, content: newContent.trim() } : m))
-      );
+      setMessages((msgs) => msgs.map((m) => (m.id === id ? { ...m, content: newContent.trim() } : m)));
     }
   };
+
+  if (!ressource) {
+    return (
+      <DefaultLayout>
+        <div className="px-4 py-10 max-w-3xl mx-auto text-center text-gray-500">
+          Chargement de la ressource...
+        </div>
+      </DefaultLayout>
+    );
+  }
+
+  const isOwner = user && ressource?.user_id === user.id;
 
   return (
     <DefaultLayout>
       <section className="px-4 py-10 max-w-3xl mx-auto space-y-10 text-primary">
-        {ressource.category && (
+        {ressource.category?.name && (
           <div className="inline-block text-xs uppercase tracking-wide font-semibold text-white bg-primary px-3 py-1 rounded-full">
             {ressource.category.name}
           </div>
@@ -194,7 +217,7 @@ export default function RessourceDetailPage() {
 
           <div className="flex items-center gap-4">
             <div
-              onClick={() => alert('Ajouté aux favoris')}
+              onClick={() => setSnackbar({ message: "Ajouté aux favoris", type: "success" })}
               className="cursor-pointer text-yellow-500 hover:text-yellow-600"
             >
               <Star size={20} />
@@ -202,7 +225,7 @@ export default function RessourceDetailPage() {
             <div
               onClick={() => {
                 navigator.clipboard.writeText(window.location.href);
-                alert('Lien copié dans le presse-papiers');
+                setSnackbar({ message: "Lien copié dans le presse-papier", type: "success" });
               }}
               className="cursor-pointer text-blue-500 hover:text-blue-600"
             >
@@ -216,36 +239,48 @@ export default function RessourceDetailPage() {
         <div className="text-sm text-gray-500 flex gap-4">
           <span className="flex items-center gap-1">
             <User size={14} />
-            {ressource.author.name}
+            {ressource.user?.username ?? `Utilisateur #${ressource.user_id}`}
           </span>
           <span className="flex items-center gap-1">
             <CalendarDays size={14} />
-            {new Date(ressource.publicationDate).toLocaleDateString("fr-FR")}
+            {new Date(ressource.publication_date).toLocaleDateString("fr-FR")}
           </span>
         </div>
 
         <div className="relative">
-          <div className="absolute top-2 right-2 flex gap-2 z-10">
-            {(isOwner || isModerator) ? (
-              <Button color="danger" onPress={() => confirm("Supprimer la ressource ?") && alert("Ressource supprimée") }>
-                <Trash2 size={18} />
-              </Button>
-            ) : (
-              <Button color="danger" onPress={() => setReporting(true)}>
-                <AlertTriangle size={18} />
-              </Button>
-            )}
-            {isOwner && (
-              <Button color="warning" onPress={() => router.push(`/ressource/edit/${ressource.id}`)}>
-                <Pencil size={18} />
-              </Button>
-            )}
-          </div>
+          {ressource.description && (
+            <p className="text-base text-gray-600 mb-4 whitespace-pre-line">{ressource.description}</p>
+          )}
 
-          <div
-            className="prose prose-sm max-w-none text-primary text-base leading-relaxed bg-white p-6 rounded-md shadow"
-            dangerouslySetInnerHTML={{ __html: ressource.content }}
-          />
+          <div className="bg-white p-6 rounded-md shadow relative">
+            <div className="absolute top-4 right-4 flex gap-2">
+              {(isOwner || isModerator || isAdmin) ? (
+                <Button color="danger" onPress={handleDeleteRessource}>
+                  <Trash2 size={18} />
+                </Button>
+              ) : (
+                <Button color="danger" onPress={() => setReporting(true)}>
+                  <AlertTriangle size={18} />
+                </Button>
+              )}
+              {isOwner && (
+                <Button
+                  color="warning"
+                  onPress={() => {
+                    sessionStorage.setItem("ressourceToEdit", JSON.stringify(ressource));
+                    router.push(`/ressource/edit/${ressource.id}`);
+                  }}
+                >
+                  <Pencil size={18} />
+                </Button>
+              )}
+            </div>
+
+            <div
+              className="prose prose-sm max-w-none text-primary text-base leading-relaxed pt-12"
+              dangerouslySetInnerHTML={{ __html: ressource.content }}
+            />
+          </div>
 
           <div className="flex gap-4 mt-4">
             <div onClick={() => handleVote("up")} className={`cursor-pointer flex items-center gap-1 ${voteState === "up" ? "text-green-600" : "text-gray-400"}`}>
@@ -272,11 +307,11 @@ export default function RessourceDetailPage() {
 
           <div className="space-y-3">
             {messages.map((msg) => {
-              const isOwner = msg.author === currentUser.name;
+              const isCommentOwner = user && msg.author === user.username;
               return (
                 <div key={msg.id} className="p-3 rounded-lg border bg-gray-50 relative">
                   <div className="absolute top-2 right-2 flex gap-1">
-                    {isOwner ? (
+                    {isCommentOwner ? (
                       <>
                         <Button size="sm" variant="ghost" onPress={() => handleDeleteMessage(msg.id)} className="text-red-600 hover:bg-red-100">
                           <Trash2 size={14} />
@@ -286,7 +321,7 @@ export default function RessourceDetailPage() {
                         </Button>
                       </>
                     ) : (
-                      <Button size="sm" variant="ghost" onPress={() => alert(`Commentaire #${msg.id} signalé.`)} className="text-red-600 hover:bg-red-100">
+                      <Button size="sm" variant="ghost" onPress={() => setSnackbar({ message: `Commentaire #${msg.id} signalé.`, type: "info" })} className="text-red-600 hover:bg-red-100">
                         <AlertTriangle size={14} />
                       </Button>
                     )}
@@ -317,6 +352,13 @@ export default function RessourceDetailPage() {
           </div>
         </div>
       </section>
+      {snackbar && (
+        <Snackbar
+          message={snackbar.message}
+          type={snackbar.type}
+          onClose={() => setSnackbar(null)}
+        />
+      )}
     </DefaultLayout>
   );
 }

@@ -1,20 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import DefaultLayout from "@/layouts/default";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import "react-quill/dist/quill.snow.css";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { useRouter } from "next/router";
+import Snackbar from "@/components/snackbar";
 
 const QuillEditor = dynamic(() => import("react-quill"), { ssr: false });
-
-const categories = [
-  { id: 1, name: "Famille" },
-  { id: 2, name: "Professionnel" },
-  { id: 3, name: "Éducation" },
-  { id: 4, name: "Communauté" },
-];
 
 const quillModules = {
   toolbar: [
@@ -32,20 +28,70 @@ const quillModules = {
 };
 
 export default function RessourceEditNewPage() {
+  const router = useRouter();
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [content, setContent] = useState("");
-  const [categoryId, setCategoryId] = useState("2");
+  const [categoryId, setCategoryId] = useState("");
   const [publicationDate, setPublicationDate] = useState(new Date().toISOString().slice(0, 10));
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+  const [snackbar, setSnackbar] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
-  const handleCreate = () => {
-    const newRessource = {
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("http://localhost:8081/api/categories");
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setCategories(data);
+          setCategoryId(data[0]?.id?.toString() || "");
+        }
+      } catch {
+        setCategories([]);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  const user = useAuthStore((state) => state.user);
+
+  const handleCreate = async () => {
+    const payload = {
       title,
+      description,
       content,
       category_id: parseInt(categoryId),
-      publicationDate,
+      user_id: user?.id,
+      status: "published",
+      type_ressource_id: 1,
     };
-    console.log("Nouvelle ressource :", newRessource);
-    alert("Ressource créée !");
+
+    try {
+      const token = localStorage.getItem("auth_token");
+
+      const response = await fetch("http://localhost:8081/api/ressources", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        const message = errorData?.message || "Erreur lors de la création.";
+        setSnackbar({ message: message, type: "error" });
+        return;
+      }
+
+      sessionStorage.setItem("snackbar_message", "Ressource créée !");
+      sessionStorage.setItem("snackbar_type", "success");
+      router.push("/ressource");
+    } catch (err: any) {
+      setSnackbar({ message: "Erreur réseau ou serveur : " + err.message, type: "error" });
+    }
   };
 
   return (
@@ -69,6 +115,17 @@ export default function RessourceEditNewPage() {
               onChange={(e) => setTitle(e.target.value)}
               className="mt-1"
               placeholder="Titre de la ressource"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">Description</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg p-3 text-sm text-primary focus:outline-primary mt-1"
+              rows={3}
+              placeholder="Résumé ou introduction de la ressource"
             />
           </div>
 
@@ -101,7 +158,7 @@ export default function RessourceEditNewPage() {
         </div>
 
         <div className="pt-6 flex justify-end">
-          <Button className="bg-green-600 text-white" onClick={handleCreate}>
+          <Button className="bg-green-600 text-white" onPress={handleCreate}>
             Créer la ressource
           </Button>
         </div>
@@ -117,6 +174,13 @@ export default function RessourceEditNewPage() {
           }
         `}</style>
       </section>
+      {snackbar && (
+          <Snackbar
+            message={snackbar.message}
+            type={snackbar.type}
+            onClose={() => setSnackbar(null)}
+          />
+        )}
     </DefaultLayout>
   );
 }
