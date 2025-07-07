@@ -141,7 +141,7 @@ export default function RessourcesPage() {
                   </CardBody>
                   <Button
                     as="a"
-                    href={`/ressources/${res.id}`}
+                    href={`/ressource/${res.id}`}
                     variant="flat"
                     className="w-full bg-gradient-to-r from-[#FF705B] to-[#FFB457] text-white"
                   >
