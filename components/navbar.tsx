@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
 import {
   Navbar as HeroUINavbar,
   NavbarContent,
@@ -13,9 +13,36 @@ import { Button } from "@heroui/button";
 import { Link } from "@heroui/link";
 import NextLink from "next/link";
 import { Image } from "@heroui/image";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 export const Navbar = () => {
-  const [isAuthenticated] = useState(false);
+  const { token, initialized, initialize, isAdmin, isModerator, logout } = useAuthStore();
+  const router = useRouter();
+
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
+  const isAuthenticated = !!token;
+  if (!initialized) return null;
+
+  const handleLogout = async () => {
+    try {
+      await fetch("http://localhost:8081/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (err) {
+      console.error("Erreur lors de la déconnexion :", err);
+    } finally {
+      logout();
+      router.push("/");
+    }
+  };
 
   return (
     <HeroUINavbar maxWidth="xl" position="sticky">
@@ -31,52 +58,48 @@ export const Navbar = () => {
         <NavbarItem className="hidden md:flex justify-end w-full gap-3">
           {isAuthenticated ? (
             <>
-              <Button className="text-default-100" as={Link} href="/ressources" variant="bordered">
-                Ressources
-              </Button>
-              <Button className="text-default-100" as={Link} href="/forum" variant="bordered">
-                Forum
-              </Button>
-              <Button className="text-default-100" as={Link} href="/aide" variant="bordered">
-                Aide
-              </Button>
-              {/* PENSER A AUTORISER CETTE TAB QUE LORSQUE PERMISSION = ADMIN */}
-              <Button as={Link} href="/dashboard" variant="flat">
-                Dashboard
-              </Button>
-              {/* PENSER A AUTORISER CETTE TAB QUE LORSQUE PERMISSION = ADMIN */}
-              <Button as={Link} href="/user/list" variant="flat">
-                Utilisateurs
-              </Button>
-              {/* PENSER A AUTORISER CETTE TAB QUE LORSQUE PERMISSION = MODO */}
-              <Button as={Link} href="/ressource/moderator" variant="flat">
-                Ressources en attente
-              </Button>
+              <Button as={Link} href="/ressources" variant="bordered" className="text-primary">Ressources</Button>
+              <Button as={Link} href="/forum" variant="bordered" className="text-primary">Forum</Button>
+              <Button as={Link} href="/aide" variant="bordered" className="text-primary">Aide</Button>
+
+              {isAdmin?.() && (
+                <>
+                  <Button as={Link} href="/dashboard" variant="bordered" className="text-primary">Dashboard</Button>
+                  <Button as={Link} href="/user/list" variant="bordered" className="text-primary">Utilisateurs</Button>
+                </>
+              )}
+
+              {isModerator?.() && (
+                <Button as={Link} href="/ressource/moderator" variant="bordered" className="text-primary">Ressources en attente</Button>
+              )}
+
               <Button
                 as={Link}
                 href="/profil"
                 variant="bordered"
-                className="text-sm font-normal text-white bg-primary"
+                className="text-primary"
               >
                 Profil
+              </Button>
+
+              <Button
+                onClick={handleLogout}
+                variant="bordered"
+                className="text-sm font-normal text-white bg-primary"
+              >
+                Déconnexion
               </Button>
             </>
           ) : (
             <>
-              <Button className="text-default-100" as={Link} href="/" variant="bordered">
-                Accueil
-              </Button>
-              <Button className="text-default-100" as={Link} href="/ressources" variant="bordered">
-                Ressources
-              </Button>
-              <Button className="text-default-100" as={Link} href="/aide" variant="bordered">
-                Aide
-              </Button>
+              <Button as={Link} href="/" variant="bordered" className="text-primary">Accueil</Button>
+              <Button as={Link} href="/ressources" variant="bordered" className="text-primary">Ressources</Button>
+              <Button as={Link} href="/aide" variant="bordered" className="text-primary">Aide</Button>
               <Button
                 as={Link}
                 href="/connexion"
                 variant="bordered"
-                className="text-sm font-normal text-white bg-primary"
+                className="text-primary"
               >
                 Connexion
               </Button>
@@ -93,41 +116,20 @@ export const Navbar = () => {
         <div className="mx-4 mt-4 flex flex-col gap-2">
           {isAuthenticated ? (
             <>
-              <Button className="text-default-100" as={Link} href="/ressources" variant="bordered">
-                Ressources
-              </Button>
-              <Button className="text-default-100" as={Link} href="/forum" variant="bordered">
-                Forum
-              </Button>
-              <Button className="text-default-100" as={Link} href="/aide" variant="bordered">
-                Aide
-              </Button>
-              <Button
-                as={Link}
-                href="/profil"
-                variant="bordered"
-                className="text-sm font-normal text-white bg-primary"
-              >
-                Profil
+              <Button as={Link} href="/ressources" variant="bordered" className="text-primary">Ressources</Button>
+              <Button as={Link} href="/forum" variant="bordered" className="text-primary">Forum</Button>
+              <Button as={Link} href="/aide" variant="bordered" className="text-primary">Aide</Button>
+              <Button as={Link} href="/profil" variant="bordered" className="text-primary">Profil</Button>
+              <Button onClick={handleLogout} variant="bordered" className="bg-red-600 text-white">
+                Déconnexion
               </Button>
             </>
           ) : (
             <>
-              <Button as={Link} href="/" variant="bordered">
-                Accueil
-              </Button>
-              <Button as={Link} href="/ressources" variant="bordered">
-                Ressources
-              </Button>
-              <Button as={Link} href="/aide" variant="bordered">
-                Aide
-              </Button>
-              <Button
-                as={Link}
-                href="/connexion"
-                variant="bordered"
-                className="text-sm font-normal text-white bg-primary"
-              >
+              <Button as={Link} href="/" variant="bordered" className="text-primary">Accueil</Button>
+              <Button as={Link} href="/ressources" variant="bordered" className="text-primary">Ressources</Button>
+              <Button as={Link} href="/aide" variant="bordered" className="text-primary">Aide</Button>
+              <Button as={Link} href="/connexion" variant="bordered" className="text-primary">
                 Connexion
               </Button>
             </>
