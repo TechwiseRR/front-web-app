@@ -15,7 +15,7 @@ type User = {
   isEmailVerified: boolean;
   registrationDate: string;
   updateDate: string;
-  roleId: number;
+  roleId: number; // 1 = admin, 2 = moderator
 };
 
 type AuthStore = {
