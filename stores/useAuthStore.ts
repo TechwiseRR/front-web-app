@@ -3,7 +3,7 @@ import { create } from "zustand";
 type Role = {
   id: number;
   name: string;
-  rank: number; // 1 = admin, 2 = moderator
+  rank: number;
 };
 
 type User = {
@@ -49,7 +49,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         },
       });
 
-      if (!res.ok) throw new Error("Token invalide ou expiré");
+      if (!res.ok) throw new Error();
 
       const user = await res.json();
 
@@ -58,8 +58,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         user,
         initialized: true,
       });
-    } catch (err) {
-      console.error("Erreur lors de l'initialisation :", err);
+    } catch {
       localStorage.removeItem("auth_token");
       set({ token: null, user: null, initialized: true });
     }
@@ -85,8 +84,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       });
 
       return true;
-    } catch (error) {
-      console.error("Erreur de connexion :", error);
+    } catch {
       return false;
     }
   },

@@ -78,13 +78,19 @@ export default function RessourceEditPage() {
     };
 
     try {
+      const token = localStorage.getItem("auth_token");
+
       const response = await fetch(`http://localhost:8081/api/ressources/${ressourceId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
+      console.log("Réponse reçue :", JSON.stringify(payload));
+console.log("Réponse reçue :", response);
 
       if (!response.ok) {
         const errorData = await response.json();

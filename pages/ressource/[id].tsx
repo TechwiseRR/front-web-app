@@ -16,41 +16,66 @@ import {
   Share2,
 } from "lucide-react";
 import { useRouter } from "next/router";
+import { useAuthStore } from "@/stores/useAuthStore";
+import Snackbar from "@/components/snackbar";
 
-const currentUser = {
-  name: "Vous",
-  role: "user",
-};
+interface Comment {
+  id: number;
+  author: string;
+  date: string;
+  content: string;
+}
 
 export default function RessourceDetailPage() {
   const router = useRouter();
+  const { id } = router.query;
+  const user = useAuthStore((state) => state.user);
+  const isAdmin = useAuthStore((state) => state.isAdmin());
+  const isModerator = useAuthStore((state) => state.isModerator());
+
   const [ressource, setRessource] = useState<any | null>(null);
-  const [upvotes, setUpvotes] = useState<number>(0);
-  const [downvotes, setDownvotes] = useState<number>(0);
+  const [upvotes, setUpvotes] = useState(0);
+  const [downvotes, setDownvotes] = useState(0);
   const [voteState, setVoteState] = useState<"up" | "down" | null>(null);
-
-  const [messages, setMessages] = useState([
-    { id: 1, author: "Clara", date: "2025-07-04T09:00:00Z", content: "Merci pour cette ressource, très claire et utile 🙏" },
-    { id: 2, author: "Ahmed", date: "2025-07-04T11:00:00Z", content: "J'ai partagé ça avec mon équipe, ça ouvre de bonnes pistes !" },
-    { id: 3, author: "Vous", date: "2025-07-05T08:00:00Z", content: "Super intéressant pour notre prochain atelier RH 👍" },
-  ]);
-
+  const [messages, setMessages] = useState<Comment[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [reporting, setReporting] = useState(false);
   const [reportText, setReportText] = useState("");
   const [reportSent, setReportSent] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("selectedRessource");
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      setRessource(parsed);
-      setUpvotes(parsed.upvotes ?? 0);
-      setDownvotes(parsed.downvotes ?? 0);
-    } else {
-      router.push("/ressource");
-    }
-  }, []);
+    if (!id) return;
+    const fetchRessource = async () => {
+      try {
+        const res = await fetch("http://localhost:8081/api/ressources");
+        const data = await res.json();
+        const found = data?.data?.find((item: any) => `${item.id}` === `${id}`);
+        if (found) {
+          setRessource(found);
+          setUpvotes(found.upvotes ?? 0);
+          setDownvotes(found.downvotes ?? 0);
+        } else {
+          router.push("/ressource");
+        }
+      } catch {
+        router.push("/ressource");
+      }
+    };
+
+    const fetchComments = async () => {
+      try {
+        const res = await fetch(`http://localhost:8081/api/ressources/${id}/comments`);
+        const data: Comment[] = await res.json();
+        if (Array.isArray(data)) setMessages(data);
+      } catch {
+        setMessages([]);
+      }
+    };
+
+    fetchRessource();
+    fetchComments();
+  }, [id]);
 
   useEffect(() => {
     if (reportSent) {
@@ -81,13 +106,63 @@ export default function RessourceDetailPage() {
     }
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
-    setMessages((msgs) => [
-      ...msgs,
-      { id: msgs.length + 1, author: currentUser.name, date: new Date().toISOString(), content: newMessage.trim() },
-    ]);
-    setNewMessage("");
+
+    const payload = {
+      resource_id: Number(id),
+      content: newMessage.trim(),
+    };
+
+    try {
+      const token = localStorage.getItem("auth_token");
+
+      const res = await fetch("http://localhost:8081/api/comments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Erreur lors de l'envoi du commentaire");
+      const json = await res.json();
+      const newComment: Comment = json.comment;
+      setMessages((prev) => [...prev, newComment]);
+      setNewMessage("");
+    } catch (err: any) {
+      setSnackbar({ message: "Erreur lors de l'envoi : " + err.message, type: "error" });
+    }
+  };
+
+  const handleDeleteRessource = async () => {
+    const confirmDelete = confirm("Supprimer la ressource ?");
+    if (!confirmDelete) return;
+
+    try {
+      const token = localStorage.getItem("auth_token");
+
+      const res = await fetch(`http://localhost:8081/api/ressources/${id}`, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Échec de la suppression");
+      }
+
+      sessionStorage.setItem("snackbar_message", "Ressource supprimée");
+      sessionStorage.setItem("snackbar_type", "success");
+      router.push("/ressource");
+    } catch (err: any) {
+      setSnackbar({ message: "Erreur lors de la suppression : " + err.message, type: "error" });
+    }
   };
 
   const handleSendReport = () => {
@@ -106,9 +181,7 @@ export default function RessourceDetailPage() {
     if (!msg) return;
     const newContent = prompt("Modifier le message :", msg.content);
     if (newContent && newContent.trim()) {
-      setMessages((msgs) =>
-        msgs.map((m) => (m.id === id ? { ...m, content: newContent.trim() } : m))
-      );
+      setMessages((msgs) => msgs.map((m) => (m.id === id ? { ...m, content: newContent.trim() } : m)));
     }
   };
 
@@ -122,8 +195,7 @@ export default function RessourceDetailPage() {
     );
   }
 
-  const isOwner = true;
-  const isModerator = currentUser.role === "moderator";
+  const isOwner = user && ressource?.user_id === user.id;
 
   return (
     <DefaultLayout>
@@ -145,7 +217,7 @@ export default function RessourceDetailPage() {
 
           <div className="flex items-center gap-4">
             <div
-              onClick={() => alert('Ajouté aux favoris')}
+              onClick={() => setSnackbar({ message: "Ajouté aux favoris", type: "success" })}
               className="cursor-pointer text-yellow-500 hover:text-yellow-600"
             >
               <Star size={20} />
@@ -153,7 +225,7 @@ export default function RessourceDetailPage() {
             <div
               onClick={() => {
                 navigator.clipboard.writeText(window.location.href);
-                alert('Lien copié dans le presse-papiers');
+                setSnackbar({ message: "Lien copié dans le presse-papier", type: "success" });
               }}
               className="cursor-pointer text-blue-500 hover:text-blue-600"
             >
@@ -176,19 +248,14 @@ export default function RessourceDetailPage() {
         </div>
 
         <div className="relative">
-            {ressource.description && (
-              <p className="text-base text-gray-600 mb-4 whitespace-pre-line">
-                {ressource.description}
-              </p>
-            )}
+          {ressource.description && (
+            <p className="text-base text-gray-600 mb-4 whitespace-pre-line">{ressource.description}</p>
+          )}
 
           <div className="bg-white p-6 rounded-md shadow relative">
             <div className="absolute top-4 right-4 flex gap-2">
-              {(isOwner || isModerator) ? (
-                <Button
-                  color="danger"
-                  onPress={() => confirm("Supprimer la ressource ?") && alert("Ressource supprimée")}
-                >
+              {(isOwner || isModerator || isAdmin) ? (
+                <Button color="danger" onPress={handleDeleteRessource}>
                   <Trash2 size={18} />
                 </Button>
               ) : (
@@ -240,11 +307,11 @@ export default function RessourceDetailPage() {
 
           <div className="space-y-3">
             {messages.map((msg) => {
-              const isOwner = msg.author === currentUser.name;
+              const isCommentOwner = user && msg.author === user.username;
               return (
                 <div key={msg.id} className="p-3 rounded-lg border bg-gray-50 relative">
                   <div className="absolute top-2 right-2 flex gap-1">
-                    {isOwner ? (
+                    {isCommentOwner ? (
                       <>
                         <Button size="sm" variant="ghost" onPress={() => handleDeleteMessage(msg.id)} className="text-red-600 hover:bg-red-100">
                           <Trash2 size={14} />
@@ -254,7 +321,7 @@ export default function RessourceDetailPage() {
                         </Button>
                       </>
                     ) : (
-                      <Button size="sm" variant="ghost" onPress={() => alert(`Commentaire #${msg.id} signalé.`)} className="text-red-600 hover:bg-red-100">
+                      <Button size="sm" variant="ghost" onPress={() => setSnackbar({ message: `Commentaire #${msg.id} signalé.`, type: "info" })} className="text-red-600 hover:bg-red-100">
                         <AlertTriangle size={14} />
                       </Button>
                     )}
@@ -285,6 +352,13 @@ export default function RessourceDetailPage() {
           </div>
         </div>
       </section>
+      {snackbar && (
+        <Snackbar
+          message={snackbar.message}
+          type={snackbar.type}
+          onClose={() => setSnackbar(null)}
+        />
+      )}
     </DefaultLayout>
   );
 }

@@ -9,8 +9,11 @@ import {
   AutocompleteItem,
 } from "@heroui/autocomplete";
 import router from "next/router";
+import { useAuthStore } from "@/stores/useAuthStore";
+import Snackbar from "@/components/snackbar";
 
 type Resource = {
+  description: ReactNode;
   id: number;
   title: string;
   content: string;
@@ -33,6 +36,20 @@ export default function RessourcesPage() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [snackbar, setSnackbar] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+
+  useEffect(() => {
+    const message = sessionStorage.getItem("snackbar_message");
+    const type = sessionStorage.getItem("snackbar_type") as "success" | "error" | "info";
+
+    if (message && type) {
+      setSnackbar({ message, type });
+      sessionStorage.removeItem("snackbar_message");
+      sessionStorage.removeItem("snackbar_type");
+    }
+  }, []);
+
+  const user = useAuthStore((state) => state.user);
 
   const fetchResources = async () => {
     setLoading(true);
@@ -83,7 +100,7 @@ export default function RessourcesPage() {
   }, [currentPage, categoryFilter]);
 
   const handleCategoryChange = (key: string | null) => {
-    const validKey = key ?? "all"; // fallback si null
+    const validKey = key ?? "all";
     setCategoryFilter(validKey);
     setCurrentPage(1);
   };
@@ -95,7 +112,6 @@ export default function RessourcesPage() {
           📚 Ressources disponibles
         </h1>
 
-        {/* Filtres */}
         <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
           <Autocomplete
             label="Filtrer par catégorie"
@@ -112,17 +128,22 @@ export default function RessourcesPage() {
             ))}
           </Autocomplete>
 
-          <Button
-            as="a"
-            href="/ressource/edit/new"
-            variant="shadow"
-            className="bg-gradient-to-r from-green-500 to-emerald-400 text-white font-semibold"
-          >
-            ➕ Créer une ressource
-          </Button>
+          {user && (
+            <Button
+              as="a"
+              onPress={() => {
+                router.push({
+                  pathname: `/ressource/edit/new`,
+                });
+              }}
+              variant="shadow"
+              className="bg-gradient-to-r from-green-500 to-emerald-400 text-white font-semibold"
+            >
+              ➕ Créer une ressource
+            </Button>
+          )}
         </div>
 
-        {/* Affichage */}
         {loading ? (
           <p className="text-center text-gray-500">Chargement...</p>
         ) : error ? (
@@ -138,7 +159,7 @@ export default function RessourcesPage() {
                     {res.title}
                   </CardHeader>
                   <CardBody className="text-sm text-default-600 mb-4">
-                    {res.content}
+                    {res.description}
                   </CardBody>
                   <Button
                     variant="flat"
@@ -158,7 +179,6 @@ export default function RessourcesPage() {
               ))}
             </div>
 
-            {/* Pagination */}
             <div className="flex justify-center gap-2 mt-10">
               <Button
                 disabled={currentPage === 1}
@@ -181,6 +201,13 @@ export default function RessourcesPage() {
           </>
         )}
       </section>
+      {snackbar && (
+        <Snackbar
+          message={snackbar.message}
+          type={snackbar.type}
+          onClose={() => setSnackbar(null)}
+        />
+      )}
     </DefaultLayout>
   );
 }
