@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect } from "react";
 import {
   Navbar as HeroUINavbar,
   NavbarContent,
@@ -5,135 +8,130 @@ import {
   NavbarMenuToggle,
   NavbarBrand,
   NavbarItem,
-  NavbarMenuItem,
 } from "@heroui/navbar";
 import { Button } from "@heroui/button";
-import { Kbd } from "@heroui/kbd";
 import { Link } from "@heroui/link";
-import { Input } from "@heroui/input";
-import { link as linkStyles } from "@heroui/theme";
 import NextLink from "next/link";
-import clsx from "clsx";
-
-import { siteConfig } from "@/config/site";
-import { ThemeSwitch } from "@/components/theme-switch";
-import {
-  TwitterIcon,
-  GithubIcon,
-  DiscordIcon,
-  HeartFilledIcon,
-  SearchIcon,
-  Logo,
-} from "@/components/icons";
+import { Image } from "@heroui/image";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 export const Navbar = () => {
-  const searchInput = (
-    <Input
-      aria-label="Search"
-      classNames={{
-        inputWrapper: "bg-default-100",
-        input: "text-sm",
-      }}
-      endContent={
-        <Kbd className="hidden lg:inline-block" keys={["command"]}>
-          K
-        </Kbd>
-      }
-      labelPlacement="outside"
-      placeholder="Search..."
-      startContent={
-        <SearchIcon className="text-base text-default-400 pointer-events-none flex-shrink-0" />
-      }
-      type="search"
-    />
-  );
+  const { token, initialized, initialize, isAdmin, isModerator, logout } = useAuthStore();
+  const router = useRouter();
+
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
+  const isAuthenticated = !!token;
+  if (!initialized) return null;
+
+  const handleLogout = async () => {
+    try {
+      await fetch("http://localhost:8081/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (err) {
+      console.error("Erreur lors de la déconnexion :", err);
+    } finally {
+      logout();
+      router.push("/");
+    }
+  };
 
   return (
     <HeroUINavbar maxWidth="xl" position="sticky">
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand className="gap-3 max-w-fit">
-          <NextLink className="flex justify-start items-center gap-1" href="/">
-            <Logo />
-            <p className="font-bold text-inherit">ACME</p>
+          <NextLink href="/" className="flex items-center gap-1">
+            <Image src="/rr.png" alt="Logo" height={40} />
           </NextLink>
         </NavbarBrand>
-        <div className="hidden lg:flex gap-4 justify-start ml-2">
-          {siteConfig.navItems.map((item) => (
-            <NavbarItem key={item.href}>
-              <NextLink
-                className={clsx(
-                  linkStyles({ color: "foreground" }),
-                  "data-[active=true]:text-primary data-[active=true]:font-medium"
-                )}
-                color="foreground"
-                href={item.href}
-              >
-                {item.label}
-              </NextLink>
-            </NavbarItem>
-          ))}
-        </div>
       </NavbarContent>
 
-      <NavbarContent
-        className="hidden sm:flex basis-1/5 sm:basis-full"
-        justify="end"
-      >
-        <NavbarItem className="hidden sm:flex gap-2">
-          <Link isExternal href={siteConfig.links.twitter} title="Twitter">
-            <TwitterIcon className="text-default-500" />
-          </Link>
-          <Link isExternal href={siteConfig.links.discord} title="Discord">
-            <DiscordIcon className="text-default-500" />
-          </Link>
-          <Link isExternal href={siteConfig.links.github} title="GitHub">
-            <GithubIcon className="text-default-500" />
-          </Link>
-          <ThemeSwitch />
-        </NavbarItem>
-        <NavbarItem className="hidden lg:flex">{searchInput}</NavbarItem>
-        <NavbarItem className="hidden md:flex">
-          <Button
-            isExternal
-            as={Link}
-            className="text-sm font-normal text-default-600 bg-default-100"
-            href={siteConfig.links.sponsor}
-            startContent={<HeartFilledIcon className="text-danger" />}
-            variant="flat"
-          >
-            Sponsor
-          </Button>
+      <NavbarContent className="hidden sm:flex sm:basis-full" justify="end">
+        <NavbarItem className="hidden md:flex justify-end w-full gap-3">
+          {isAuthenticated ? (
+            <>
+              <Button as={Link} href="/ressource" variant="bordered" className="text-primary">Ressources</Button>
+              <Button as={Link} href="/aide" variant="bordered" className="text-primary">Aide</Button>
+
+              {isAdmin?.() && (
+                <>
+                  <Button as={Link} href="/dashboard" variant="bordered" className="text-primary">Dashboard</Button>
+                  <Button as={Link} href="/user/list" variant="bordered" className="text-primary">Utilisateurs</Button>
+                </>
+              )}
+
+              {isModerator?.() && (
+                <Button as={Link} href="/ressource/moderator" variant="bordered" className="text-primary">Ressources en attente</Button>
+              )}
+
+              <Button
+                as={Link}
+                href="/profil"
+                variant="bordered"
+                className="text-primary"
+              >
+                Profil
+              </Button>
+
+              <Button
+                onClick={handleLogout}
+                variant="bordered"
+                className="text-sm font-normal text-white bg-primary"
+              >
+                Déconnexion
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button as={Link} href="/" variant="bordered" className="text-primary">Accueil</Button>
+              <Button as={Link} href="/ressource" variant="bordered" className="text-primary">Ressources</Button>
+              <Button as={Link} href="/aide" variant="bordered" className="text-primary">Aide</Button>
+              <Button
+                as={Link}
+                href="/connexion"
+                variant="bordered"
+                className="text-primary"
+              >
+                Connexion
+              </Button>
+            </>
+          )}
         </NavbarItem>
       </NavbarContent>
 
       <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
-        <Link isExternal href={siteConfig.links.github}>
-          <GithubIcon className="text-default-500" />
-        </Link>
-        <ThemeSwitch />
-        <NavbarMenuToggle />
+        <NavbarMenuToggle className="text-primary" />
       </NavbarContent>
 
       <NavbarMenu>
-        {searchInput}
-        <div className="mx-4 mt-2 flex flex-col gap-2">
-          {siteConfig.navMenuItems.map((item, index) => (
-            <NavbarMenuItem key={`${item}-${index}`}>
-              <Link
-                color={
-                  index === 2
-                    ? "primary"
-                    : index === siteConfig.navMenuItems.length - 1
-                      ? "danger"
-                      : "foreground"
-                }
-                href="#"
-                size="lg"
-              >
-                {item.label}
-              </Link>
-            </NavbarMenuItem>
-          ))}
+        <div className="mx-4 mt-4 flex flex-col gap-2">
+          {isAuthenticated ? (
+            <>
+              <Button as={Link} href="/ressource" variant="bordered" className="text-primary">Ressources</Button>
+              <Button as={Link} href="/aide" variant="bordered" className="text-primary">Aide</Button>
+              <Button as={Link} href="/profil" variant="bordered" className="text-primary">Profil</Button>
+              <Button onClick={handleLogout} variant="bordered" className="bg-red-600 text-white">
+                Déconnexion
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button as={Link} href="/" variant="bordered" className="text-primary">Accueil</Button>
+              <Button as={Link} href="/ressource" variant="bordered" className="text-primary">Ressources</Button>
+              <Button as={Link} href="/aide" variant="bordered" className="text-primary">Aide</Button>
+              <Button as={Link} href="/connexion" variant="bordered" className="text-primary">
+                Connexion
+              </Button>
+            </>
+          )}
         </div>
       </NavbarMenu>
     </HeroUINavbar>

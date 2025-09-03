@@ -14,6 +14,11 @@ const config = {
         sans: ["var(--font-sans)"],
         mono: ["var(--font-mono)"],
       },
+      colors: {
+        primary: '#053559',
+        background: '#f3ede7',
+        yellow: '#e5920c'
+      },
     },
   },
   darkMode: "class",

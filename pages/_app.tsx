@@ -6,8 +6,15 @@ import { useRouter } from "next/router";
 
 import { fontSans, fontMono } from "@/config/fonts";
 import "@/styles/globals.css";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { useEffect } from "react";
 
 export default function App({ Component, pageProps }: AppProps) {
+  const initialize = useAuthStore((state) => state.initialize);
+
+  useEffect(() => {
+    initialize();
+  }, []);
   const router = useRouter();
 
   return (
