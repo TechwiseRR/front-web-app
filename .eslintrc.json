@@ -5,8 +5,7 @@
     "es2021": true,
     "node": true
   },
-  "extends": [
-  ],
+  "extends": [],
   "plugins": [],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -27,6 +26,6 @@
     "react/no-unescaped-entities": "off",
     "jsx-a11y/label-has-associated-control": "off",
     "react/no-unknown-property": "off",
-    "react-hooks/exhaustive-deps": "off",
-  },
+    "react-hooks/exhaustive-deps": "off"
+  }
 }
