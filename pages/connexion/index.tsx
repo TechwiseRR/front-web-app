@@ -79,7 +79,7 @@ export default function IndexPage() {
             <Input
               id="email"
               type="email"
-              label="Adresse email"
+              label="Email"
               value={form.email}
               onChange={handleChange}
               isInvalid={!!errors.email}
