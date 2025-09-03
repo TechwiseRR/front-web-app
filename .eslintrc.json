@@ -26,6 +26,7 @@
     }
   },
   "rules": {
+    "react/react-in-jsx-scope": "off", // désactive cette règle
     // "no-console": "warn",
     // "react/prop-types": "off",
     // "react/jsx-uses-react": "off",
