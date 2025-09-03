@@ -28,7 +28,4 @@ jobs:
         run: npm ci
 
       - name: Build Next.js
-        env:
-          # Déclarez vos secrets si besoin, exemple:
-          # NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
         run: npm run build
